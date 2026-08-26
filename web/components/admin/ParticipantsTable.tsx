@@ -2,6 +2,7 @@
 
 import { useBiomatesData } from "@/lib/data-context";
 import { combinedStatusLabel, combinedStatusTone } from "@/lib/status";
+import { MESSAGE_LABELS } from "@/lib/message-templates";
 import type { BiomatesEvent, Registration } from "@/lib/types";
 
 interface ParticipantsTableProps {
@@ -10,6 +11,12 @@ interface ParticipantsTableProps {
   selected: Set<string>;
   onToggleOne: (id: string) => void;
   onToggleAll: (checked: boolean) => void;
+}
+
+function lastSentLabel(r: Registration): string | null {
+  const log = r.smsLog;
+  if (!log || !log.length) return null;
+  return MESSAGE_LABELS[log[log.length - 1].templateKey] ?? "메시지";
 }
 
 export function ParticipantsTable({ event, registrations, selected, onToggleOne, onToggleAll }: ParticipantsTableProps) {
@@ -65,13 +72,14 @@ export function ParticipantsTable({ event, registrations, selected, onToggleOne,
             <th>연락처</th>
             <th>소속</th>
             <th>신청상태</th>
+            <th>최근 발송</th>
             <th>액션</th>
           </tr>
         </thead>
         <tbody>
           {registrations.length === 0 ? (
             <tr>
-              <td colSpan={6}>
+              <td colSpan={7}>
                 <div className="empty-state">조건에 맞는 참가자가 없습니다.</div>
               </td>
             </tr>
@@ -79,6 +87,7 @@ export function ParticipantsTable({ event, registrations, selected, onToggleOne,
             registrations.map((r) => {
               const label = combinedStatusLabel(r);
               const cls = `pill-${combinedStatusTone(r)}`;
+              const lastSent = lastSentLabel(r);
               return (
                 <tr key={r.id}>
                   <td data-label="선택">
@@ -98,6 +107,7 @@ export function ParticipantsTable({ event, registrations, selected, onToggleOne,
                   <td data-label="신청상태">
                     <span className={`pill ${cls}`}>{label}</span>
                   </td>
+                  <td data-label="최근 발송">{lastSent ? <span className="pill pill-neutral">{lastSent}</span> : <span className="faint">-</span>}</td>
                   <td data-label="액션">
                     <div className="row-actions">
                       {actionsFor(r).length === 0 ? (

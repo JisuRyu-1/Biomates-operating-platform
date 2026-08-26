@@ -4,13 +4,14 @@ import { useState } from "react";
 import { useRouter, useSearchParams, type ReadonlyURLSearchParams } from "next/navigation";
 import { useBiomatesData } from "@/lib/data-context";
 import { ParticipantsTable } from "@/components/admin/ParticipantsTable";
+import { MessagePanel } from "@/components/admin/MessagePanel";
 import { NametagPanel } from "@/components/admin/NametagPanel";
 import { SurveyPanel } from "@/components/admin/SurveyPanel";
 import { QUICK_FILTERS, isPaymentStatus, isQuickFilterKey, isRegistrationStatus, type QuickFilterKey } from "@/lib/participant-filters";
 import type { BiomatesEvent, PaymentStatus, RegistrationStatus } from "@/lib/types";
 import { REG_LABEL, PAY_LABEL } from "@/lib/status";
 
-type PanelKey = "nametags" | "survey";
+type PanelKey = "messages" | "nametags" | "survey";
 
 function EventSelector({ events, eventId }: { events: BiomatesEvent[]; eventId: string }) {
   const router = useRouter();
@@ -49,7 +50,7 @@ function ParticipantsWorkspace({ event, initialParams }: { event: BiomatesEvent;
   });
   const [panel, setPanel] = useState<PanelKey | null>(() => {
     const p = initialParams.get("panel");
-    return p === "nametags" || p === "survey" ? p : null;
+    return p === "messages" || p === "nametags" || p === "survey" ? p : null;
   });
   const autoselect = initialParams.get("autoselect") === "1";
 
@@ -144,6 +145,9 @@ function ParticipantsWorkspace({ event, initialParams }: { event: BiomatesEvent;
               <strong>{selected.size}</strong>명 선택됨
             </span>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+              <button type="button" className="btn btn-sm btn-primary" onClick={() => openPanel("messages")}>
+                문자 발송
+              </button>
               <button type="button" className="btn btn-sm btn-primary" onClick={() => openPanel("nametags")}>
                 네임택 인쇄
               </button>
@@ -158,6 +162,7 @@ function ParticipantsWorkspace({ event, initialParams }: { event: BiomatesEvent;
         </div>
       )}
 
+      {panel === "messages" && <MessagePanel event={event} recipients={selectedList} onClose={() => setPanel(null)} onSent={clearSelection} />}
       {panel === "nametags" && <NametagPanel recipients={selectedList} onClose={() => setPanel(null)} />}
       {panel === "survey" && <SurveyPanel event={event} recipients={selectedList} onClose={() => setPanel(null)} onSent={clearSelection} />}
 

@@ -83,6 +83,7 @@ export interface Registration {
   checkinAt: string | null;
   depositorName: string;
   note: string;
+  smsLog?: MessageLogEntry[];
   emailLog?: EmailLogEntry[];
 }
 
@@ -139,6 +140,47 @@ export interface AdminAccount {
 }
 
 export type MessageSendStatus = "SENT" | "FAILED";
+export type SmsMessageType = "SMS" | "LMS";
+export type MessageTemplateKey = "payment" | "paidConfirm" | "cancelRefund" | "reminder" | "custom";
+
+export interface MessageLogEntry {
+  templateKey: MessageTemplateKey;
+  body: string;
+  sentAt: string;
+  status: MessageSendStatus;
+  msgType: SmsMessageType;
+  providerMessageId?: string;
+  errorMessage?: string;
+}
+
+export interface MessageBatchLog {
+  id: string;
+  eventId: string;
+  templateKey: MessageTemplateKey;
+  recipientCount: number;
+  recipientNames: string[];
+  sentAt: string;
+  successCount: number;
+  failedCount: number;
+}
+
+/** One recipient's already-merged message, sent from the client to /api/admin/messages/send. */
+export interface SmsSendRequestItem {
+  registrationId: string;
+  phone: string;
+  name: string;
+  message: string;
+}
+
+/** Per-recipient outcome returned by /api/admin/messages/send. */
+export interface SmsSendResult {
+  registrationId: string;
+  phone: string;
+  success: boolean;
+  msgType: SmsMessageType;
+  providerMessageId?: string;
+  errorMessage?: string;
+}
 
 export interface EmailLogEntry {
   subject: string;

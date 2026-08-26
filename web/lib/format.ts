@@ -18,6 +18,19 @@ export function fmtDateTimeShort(iso: string): string {
   return `${fmtDate(iso.slice(0, 10))} ${h}:${min}`;
 }
 
+/** "010-1234-5678" -> "010-****-5678". Falls back to masking the middle third of any other format. */
+export function maskPhone(phone: string): string {
+  const parts = phone.split("-");
+  if (parts.length === 3) {
+    return `${parts[0]}-${"*".repeat(parts[1].length)}-${parts[2]}`;
+  }
+  const len = phone.length;
+  if (len <= 4) return phone;
+  const start = Math.floor(len / 3);
+  const end = len - Math.floor(len / 3);
+  return phone.slice(0, start) + "*".repeat(end - start) + phone.slice(end);
+}
+
 export function todayStr(): string {
   const now = new Date();
   const y = now.getFullYear();

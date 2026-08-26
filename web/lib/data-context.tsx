@@ -5,9 +5,12 @@ import type {
   BiomatesEvent,
   EmailBatchLog,
   EventFormValues,
+  MessageBatchLog,
   MessageSendStatus,
+  MessageTemplateKey,
   Registration,
   RegistrationFormValues,
+  SmsMessageType,
 } from "./types";
 import { seedEvents } from "./seed-data";
 import { initialStatusFor } from "./status";
@@ -18,6 +21,7 @@ interface PersistedState {
   events: BiomatesEvent[];
   registrations: Registration[];
   myRegistrationIds: string[];
+  messageLogs: MessageBatchLog[];
   emailLogs: EmailBatchLog[];
 }
 
@@ -26,6 +30,7 @@ function freshState(): PersistedState {
     events: seedEvents(),
     registrations: [],
     myRegistrationIds: [],
+    messageLogs: [],
     emailLogs: [],
   };
 }
@@ -39,8 +44,9 @@ function normalizeState(raw: Partial<PersistedState> | null): PersistedState {
   if (!raw) return freshState();
   return {
     events: raw.events ?? seedEvents(),
-    registrations: (raw.registrations ?? []).map((r) => ({ ...r, emailLog: r.emailLog ?? [] })),
+    registrations: (raw.registrations ?? []).map((r) => ({ ...r, smsLog: r.smsLog ?? [], emailLog: r.emailLog ?? [] })),
     myRegistrationIds: raw.myRegistrationIds ?? [],
+    messageLogs: raw.messageLogs ?? [],
     emailLogs: raw.emailLogs ?? [],
   };
 }
@@ -106,6 +112,7 @@ interface RegisterResult {
 
 interface BiomatesDataContextValue {
   events: BiomatesEvent[];
+  messageLogs: MessageBatchLog[];
   emailLogs: EmailBatchLog[];
   isHydrated: boolean;
   getEvent: (eventId: string) => BiomatesEvent | undefined;
@@ -124,7 +131,18 @@ interface BiomatesDataContextValue {
   undoCheckIn: (registrationId: string) => void;
   markAttended: (registrationId: string) => void;
   markNoShow: (registrationId: string) => void;
+  recordMessageBatch: (eventId: string, templateKey: MessageTemplateKey, entries: MessageBatchEntry[]) => void;
   recordEmailBatch: (eventId: string, subject: string, entries: EmailBatchEntry[]) => void;
+}
+
+export interface MessageBatchEntry {
+  registrationId: string;
+  name: string;
+  body: string;
+  status: MessageSendStatus;
+  msgType: SmsMessageType;
+  providerMessageId?: string;
+  errorMessage?: string;
 }
 
 export interface EmailBatchEntry {
@@ -194,6 +212,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       checkinAt: null,
       depositorName: values.name,
       note: "",
+      smsLog: [],
       emailLog: [],
     };
 
@@ -266,6 +285,45 @@ export function DataProvider({ children }: { children: ReactNode }) {
     updateState((prev) => patchRegistration(prev, registrationId, { registrationStatus: "NO_SHOW" }));
   }, []);
 
+  const recordMessageBatch = useCallback((eventId: string, templateKey: MessageTemplateKey, entries: MessageBatchEntry[]) => {
+    updateState((prev) => {
+      if (!entries.length) return prev;
+      const now = new Date().toISOString();
+      const entryByRegId = new Map(entries.map((e) => [e.registrationId, e]));
+      const registrations = prev.registrations.map((r) => {
+        const entry = entryByRegId.get(r.id);
+        if (!entry) return r;
+        return {
+          ...r,
+          smsLog: [
+            ...(r.smsLog ?? []),
+            {
+              templateKey,
+              body: entry.body,
+              sentAt: now,
+              status: entry.status,
+              msgType: entry.msgType,
+              providerMessageId: entry.providerMessageId,
+              errorMessage: entry.errorMessage,
+            },
+          ],
+        };
+      });
+      const successCount = entries.filter((e) => e.status === "SENT").length;
+      const batch: MessageBatchLog = {
+        id: `msg-${Date.now()}`,
+        eventId,
+        templateKey,
+        recipientCount: entries.length,
+        recipientNames: entries.map((e) => e.name),
+        sentAt: now,
+        successCount,
+        failedCount: entries.length - successCount,
+      };
+      return { ...prev, registrations, messageLogs: [batch, ...prev.messageLogs] };
+    });
+  }, []);
+
   const recordEmailBatch = useCallback((eventId: string, subject: string, entries: EmailBatchEntry[]) => {
     updateState((prev) => {
       if (!entries.length) return prev;
@@ -306,6 +364,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
   const value: BiomatesDataContextValue = {
     events: state.events,
+    messageLogs: state.messageLogs,
     emailLogs: state.emailLogs,
     isHydrated,
     getEvent,
@@ -324,6 +383,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     undoCheckIn,
     markAttended,
     markNoShow,
+    recordMessageBatch,
     recordEmailBatch,
   };
 

@@ -1149,6 +1149,125 @@ tbody tr:hover {
   }
 }
 
+/* ---------- Mobile screen preview (desktop-only convenience toggle) ---------- */
+.preview-toggle {
+  white-space: nowrap;
+}
+@media (max-width: 700px) {
+  .preview-toggle {
+    display: none; /* pointless on an actual mobile viewport */
+  }
+}
+.device-frame.phone-preview {
+  width: 392px;
+  max-width: 100%;
+  height: 800px;
+  margin: 8px auto 28px;
+  position: relative;
+  border: 10px solid var(--brand-navy-fixed);
+  border-radius: 44px;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  background: var(--bg);
+}
+.device-frame.phone-preview::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 130px;
+  height: 24px;
+  background: var(--brand-navy-fixed);
+  border-radius: 0 0 16px 16px;
+  z-index: 6;
+}
+.device-frame.phone-preview .phone-preview-content {
+  position: absolute;
+  inset: 0;
+  overflow-y: auto;
+  padding: 34px 14px 10px;
+  container-type: inline-size;
+  container-name: preview-shell;
+}
+
+/*
+ * The rules below intentionally mirror the "@media (max-width: 700/620px)"
+ * blocks above, but as container queries scoped to .phone-preview-content —
+ * so the mobile layout applies based on the *frame's* width, not the real
+ * browser viewport. The site header/bottom nav stay outside the frame and
+ * are not covered by this (they keep following the real viewport width).
+ */
+@container preview-shell (max-width: 700px) {
+  .grid-2 {
+    grid-template-columns: 1fr;
+  }
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+  .card {
+    padding: 18px;
+  }
+  .kv {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 3px;
+  }
+  .kv-value {
+    text-align: left;
+  }
+  .bulk-bar {
+    position: static;
+  }
+  .table-wrap.responsive-cards {
+    border: 0;
+  }
+  .table-wrap.responsive-cards table {
+    min-width: 0;
+  }
+  .responsive-cards table,
+  .responsive-cards thead,
+  .responsive-cards tbody,
+  .responsive-cards th,
+  .responsive-cards td,
+  .responsive-cards tr {
+    display: block;
+    width: 100%;
+  }
+  .responsive-cards thead {
+    display: none;
+  }
+  .responsive-cards tbody tr {
+    margin-bottom: 12px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 10px 12px;
+    background: var(--surface);
+  }
+  .responsive-cards td {
+    border: 0;
+    padding: 6px 2px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+  }
+  .responsive-cards td::before {
+    content: attr(data-label);
+    font-weight: 800;
+    color: var(--text-faint);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    flex: none;
+  }
+}
+@container preview-shell (max-width: 620px) {
+  .stat-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   * {
     transition: none !important;

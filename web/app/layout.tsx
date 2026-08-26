@@ -8,6 +8,8 @@ import { ThemeProvider } from "@/lib/theme-context";
 import { ToastProvider } from "@/components/Toast";
 import { SiteHeader } from "@/components/SiteHeader";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
+import { DevicePreviewProvider } from "@/lib/device-preview-context";
+import { DevicePreviewFrame } from "@/components/DevicePreviewFrame";
 
 const pretendard = localFont({
   src: [
@@ -41,11 +43,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <ToastProvider>
             <DataProvider>
               <AuthProvider>
-                <div className="page">
-                  <SiteHeader />
-                  <main className="app-shell">{children}</main>
-                </div>
-                <MobileBottomNav />
+                <DevicePreviewProvider>
+                  <div className="page">
+                    <SiteHeader />
+                    <main className="app-shell">
+                      <DevicePreviewFrame>{children}</DevicePreviewFrame>
+                    </main>
+                  </div>
+                  <MobileBottomNav />
+                </DevicePreviewProvider>
               </AuthProvider>
             </DataProvider>
           </ToastProvider>

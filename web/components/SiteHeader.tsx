@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTheme } from "@/lib/theme-context";
 import { useAdminAuth } from "@/lib/auth-context";
+import { useDevicePreview } from "@/lib/device-preview-context";
 
 const NAV_ITEMS = [
   { href: "/", label: "Home" },
@@ -16,6 +17,7 @@ export function SiteHeader() {
   const pathname = usePathname();
   const { isDark, toggleTheme } = useTheme();
   const { currentAdmin, logout } = useAdminAuth();
+  const { isPreview, toggle: togglePreview } = useDevicePreview();
   const onAdminRoute = pathname.startsWith("/admin");
 
   return (
@@ -63,6 +65,14 @@ export function SiteHeader() {
             Admin
           </Link>
         )}
+        <button
+          type="button"
+          className="btn btn-ghost btn-sm preview-toggle"
+          onClick={togglePreview}
+          aria-pressed={isPreview}
+        >
+          {isPreview ? "데스크톱 화면으로 보기" : "모바일 화면 미리보기"}
+        </button>
         <button
           type="button"
           className="icon-btn"

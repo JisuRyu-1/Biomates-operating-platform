@@ -1,4 +1,4 @@
-import type { AdminAccount, BiomatesEvent } from "./types";
+import type { BiomatesEvent } from "./types";
 
 /**
  * Placeholder seed content for local/demo use. Replace with real event and
@@ -82,12 +82,4 @@ export function seedEvents(): BiomatesEvent[] {
       surveyFormUrl: "https://forms.gle/sample-biomates-survey",
     },
   ];
-}
-
-/**
- * Single placeholder admin account. Add real teammates from the Team screen
- * once this is deployed — real names/emails should never be hardcoded here.
- */
-export function seedAdminAccounts(): AdminAccount[] {
-  return [{ id: "admin-1", name: "운영진 계정 (본인)", email: "admin@biomates.example" }];
 }

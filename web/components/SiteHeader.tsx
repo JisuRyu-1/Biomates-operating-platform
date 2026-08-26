@@ -52,7 +52,7 @@ export function SiteHeader() {
         {onAdminRoute && currentAdmin ? (
           <>
             <span className="faint">{currentAdmin.name}님</span>
-            <button type="button" className="btn btn-ghost btn-sm" onClick={logout}>
+            <button type="button" className="btn btn-ghost btn-sm" onClick={() => void logout()}>
               로그아웃
             </button>
           </>

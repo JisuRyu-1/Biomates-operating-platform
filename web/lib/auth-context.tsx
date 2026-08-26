@@ -1,73 +1,104 @@
 "use client";
 
-import { createContext, useCallback, useContext, useSyncExternalStore, type ReactNode } from "react";
-import { useBiomatesData } from "./data-context";
+import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
+import type { Session } from "@supabase/supabase-js";
+import { createClient } from "@/lib/supabase/client";
+import { isSupabaseConfigured } from "@/lib/supabase/is-configured";
+import { findAdminByEmail } from "@/lib/admin-whitelist";
 import type { AdminAccount } from "./types";
 
-const SESSION_KEY = "biomates_admin_session";
-
-function readSessionAccountId(): string | null {
-  try {
-    return window.localStorage.getItem(SESSION_KEY);
-  } catch {
-    return null;
-  }
-}
-
-const listeners = new Set<() => void>();
-function subscribe(callback: () => void): () => void {
-  listeners.add(callback);
-  window.addEventListener("storage", callback);
-  return () => {
-    listeners.delete(callback);
-    window.removeEventListener("storage", callback);
-  };
-}
-function notify() {
-  listeners.forEach((l) => l());
-}
-
 interface AuthContextValue {
+  isConfigured: boolean;
+  isLoading: boolean;
   currentAdmin: AdminAccount | null;
   isAuthed: boolean;
-  login: (accountId: string) => void;
-  logout: () => void;
+  /** Signed in with a real Google account, but that email isn't in admin_whitelist. */
+  accessDenied: boolean;
+  deniedEmail: string | null;
+  loginWithGoogle: () => Promise<void>;
+  logout: () => Promise<void>;
+  dismissAccessDenied: () => void;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
-/**
- * "Who is currently signed in" is a session concept, kept separate from
- * `adminAccounts` (the whitelist of who is *allowed* to sign in, managed on
- * the Team screen). Nesting inside DataProvider lets a Team removal
- * immediately invalidate that person's session — `currentAdmin` is
- * recomputed against the live account list on every render.
- */
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const { adminAccounts } = useBiomatesData();
-  const sessionAccountId = useSyncExternalStore(subscribe, readSessionAccountId, () => null);
-  const currentAdmin = sessionAccountId ? (adminAccounts.find((a) => a.id === sessionAccountId) ?? null) : null;
+  const configured = isSupabaseConfigured();
+  const [isLoading, setIsLoading] = useState(configured);
+  const [currentAdmin, setCurrentAdmin] = useState<AdminAccount | null>(null);
+  const [accessDenied, setAccessDenied] = useState(false);
+  const [deniedEmail, setDeniedEmail] = useState<string | null>(null);
 
-  const login = useCallback((accountId: string) => {
-    try {
-      window.localStorage.setItem(SESSION_KEY, accountId);
-    } catch {
-      // ignore
-    }
-    notify();
-  }, []);
+  useEffect(() => {
+    if (!configured) return;
+    const supabase = createClient();
 
-  const logout = useCallback(() => {
-    try {
-      window.localStorage.removeItem(SESSION_KEY);
-    } catch {
-      // ignore
+    async function resolveSession(session: Session | null) {
+      const email = session?.user?.email;
+      if (!email) {
+        setCurrentAdmin(null);
+        setIsLoading(false);
+        return;
+      }
+      try {
+        const admin = await findAdminByEmail(email);
+        if (admin) {
+          setCurrentAdmin(admin);
+          setAccessDenied(false);
+          setDeniedEmail(null);
+        } else {
+          setCurrentAdmin(null);
+          setAccessDenied(true);
+          setDeniedEmail(email);
+          await supabase.auth.signOut();
+        }
+      } finally {
+        setIsLoading(false);
+      }
     }
-    notify();
+
+    supabase.auth.getSession().then(({ data }) => resolveSession(data.session));
+    const { data: subscription } = supabase.auth.onAuthStateChange((_event, session) => {
+      resolveSession(session);
+    });
+    return () => subscription.subscription.unsubscribe();
+  }, [configured]);
+
+  const loginWithGoogle = useCallback(async () => {
+    if (!configured) return;
+    const supabase = createClient();
+    await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: `${window.location.origin}/auth/callback` },
+    });
+  }, [configured]);
+
+  const logout = useCallback(async () => {
+    if (!configured) return;
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    setCurrentAdmin(null);
+  }, [configured]);
+
+  const dismissAccessDenied = useCallback(() => {
+    setAccessDenied(false);
+    setDeniedEmail(null);
   }, []);
 
   return (
-    <AuthContext.Provider value={{ currentAdmin, isAuthed: !!currentAdmin, login, logout }}>
+    <AuthContext.Provider
+      value={{
+        isConfigured: configured,
+        isLoading,
+        currentAdmin,
+        isAuthed: !!currentAdmin,
+        accessDenied,
+        deniedEmail,
+        loginWithGoogle,
+        logout,
+        dismissAccessDenied,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

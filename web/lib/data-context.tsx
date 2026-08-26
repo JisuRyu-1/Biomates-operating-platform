@@ -2,7 +2,6 @@
 
 import { createContext, useCallback, useContext, useSyncExternalStore, type ReactNode } from "react";
 import type {
-  AdminAccount,
   BiomatesEvent,
   EmailBatchLog,
   EventFormValues,
@@ -11,7 +10,7 @@ import type {
   Registration,
   RegistrationFormValues,
 } from "./types";
-import { seedAdminAccounts, seedEvents } from "./seed-data";
+import { seedEvents } from "./seed-data";
 import { initialStatusFor } from "./status";
 import { resolveTemplate } from "./message-templates";
 
@@ -21,7 +20,6 @@ interface PersistedState {
   events: BiomatesEvent[];
   registrations: Registration[];
   myRegistrationIds: string[];
-  adminAccounts: AdminAccount[];
   messageLogs: MessageBatchLog[];
   emailLogs: EmailBatchLog[];
 }
@@ -31,7 +29,6 @@ function freshState(): PersistedState {
     events: seedEvents(),
     registrations: [],
     myRegistrationIds: [],
-    adminAccounts: seedAdminAccounts(),
     messageLogs: [],
     emailLogs: [],
   };
@@ -39,8 +36,8 @@ function freshState(): PersistedState {
 
 /**
  * Fills in fields that didn't exist yet in state a browser may already have
- * persisted from an earlier version of this app (e.g. before adminAccounts
- * existed) — without this, `.map`/`.filter` on a missing field throws.
+ * persisted from an earlier version of this app — without this, `.map`/
+ * `.filter` on a missing field throws.
  */
 function normalizeState(raw: Partial<PersistedState> | null): PersistedState {
   if (!raw) return freshState();
@@ -48,7 +45,6 @@ function normalizeState(raw: Partial<PersistedState> | null): PersistedState {
     events: raw.events ?? seedEvents(),
     registrations: (raw.registrations ?? []).map((r) => ({ ...r, smsLog: r.smsLog ?? [], emailLog: r.emailLog ?? [] })),
     myRegistrationIds: raw.myRegistrationIds ?? [],
-    adminAccounts: raw.adminAccounts?.length ? raw.adminAccounts : seedAdminAccounts(),
     messageLogs: raw.messageLogs ?? [],
     emailLogs: raw.emailLogs ?? [],
   };
@@ -115,7 +111,6 @@ interface RegisterResult {
 
 interface BiomatesDataContextValue {
   events: BiomatesEvent[];
-  adminAccounts: AdminAccount[];
   messageLogs: MessageBatchLog[];
   emailLogs: EmailBatchLog[];
   isHydrated: boolean;
@@ -137,8 +132,6 @@ interface BiomatesDataContextValue {
   markNoShow: (registrationId: string) => void;
   sendMessages: (eventId: string, registrationIds: string[], templateKey: MessageTemplateKey, body: string) => void;
   sendSurveyEmails: (eventId: string, registrationIds: string[], subject: string, body: string) => void;
-  addAdminAccount: (name: string, email: string) => void;
-  removeAdminAccount: (id: string) => void;
 }
 
 const BiomatesDataContext = createContext<BiomatesDataContextValue | null>(null);
@@ -326,23 +319,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
-  const addAdminAccount = useCallback((name: string, email: string) => {
-    updateState((prev) => ({
-      ...prev,
-      adminAccounts: [...prev.adminAccounts, { id: `admin-${Date.now()}`, name, email }],
-    }));
-  }, []);
-
-  const removeAdminAccount = useCallback((id: string) => {
-    updateState((prev) => {
-      if (prev.adminAccounts.length <= 1) return prev;
-      return { ...prev, adminAccounts: prev.adminAccounts.filter((a) => a.id !== id) };
-    });
-  }, []);
-
   const value: BiomatesDataContextValue = {
     events: state.events,
-    adminAccounts: state.adminAccounts,
     messageLogs: state.messageLogs,
     emailLogs: state.emailLogs,
     isHydrated,
@@ -364,8 +342,6 @@ export function DataProvider({ children }: { children: ReactNode }) {
     markNoShow,
     sendMessages,
     sendSurveyEmails,
-    addAdminAccount,
-    removeAdminAccount,
   };
 
   return <BiomatesDataContext.Provider value={value}>{children}</BiomatesDataContext.Provider>;

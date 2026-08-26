@@ -1,9 +1,19 @@
 "use client";
 
 import { createContext, useCallback, useContext, useSyncExternalStore, type ReactNode } from "react";
-import type { BiomatesEvent, EventFormValues, Registration, RegistrationFormValues } from "./types";
-import { seedEvents } from "./seed-data";
+import type {
+  AdminAccount,
+  BiomatesEvent,
+  EmailBatchLog,
+  EventFormValues,
+  MessageBatchLog,
+  MessageTemplateKey,
+  Registration,
+  RegistrationFormValues,
+} from "./types";
+import { seedAdminAccounts, seedEvents } from "./seed-data";
 import { initialStatusFor } from "./status";
+import { resolveTemplate } from "./message-templates";
 
 const STORAGE_KEY = "biomates_web_state_v1";
 
@@ -11,17 +21,44 @@ interface PersistedState {
   events: BiomatesEvent[];
   registrations: Registration[];
   myRegistrationIds: string[];
+  adminAccounts: AdminAccount[];
+  messageLogs: MessageBatchLog[];
+  emailLogs: EmailBatchLog[];
 }
 
 function freshState(): PersistedState {
-  return { events: seedEvents(), registrations: [], myRegistrationIds: [] };
+  return {
+    events: seedEvents(),
+    registrations: [],
+    myRegistrationIds: [],
+    adminAccounts: seedAdminAccounts(),
+    messageLogs: [],
+    emailLogs: [],
+  };
+}
+
+/**
+ * Fills in fields that didn't exist yet in state a browser may already have
+ * persisted from an earlier version of this app (e.g. before adminAccounts
+ * existed) — without this, `.map`/`.filter` on a missing field throws.
+ */
+function normalizeState(raw: Partial<PersistedState> | null): PersistedState {
+  if (!raw) return freshState();
+  return {
+    events: raw.events ?? seedEvents(),
+    registrations: (raw.registrations ?? []).map((r) => ({ ...r, smsLog: r.smsLog ?? [], emailLog: r.emailLog ?? [] })),
+    myRegistrationIds: raw.myRegistrationIds ?? [],
+    adminAccounts: raw.adminAccounts?.length ? raw.adminAccounts : seedAdminAccounts(),
+    messageLogs: raw.messageLogs ?? [],
+    emailLogs: raw.emailLogs ?? [],
+  };
 }
 
 function loadFromStorage(): PersistedState | null {
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
     if (!raw) return null;
-    return JSON.parse(raw) as PersistedState;
+    return normalizeState(JSON.parse(raw) as Partial<PersistedState>);
   } catch {
     return null;
   }
@@ -67,6 +104,10 @@ function updateState(updater: (prev: PersistedState) => PersistedState) {
   listeners.forEach((l) => l());
 }
 
+function patchRegistration(prev: PersistedState, id: string, patch: Partial<Registration>): PersistedState {
+  return { ...prev, registrations: prev.registrations.map((r) => (r.id === id ? { ...r, ...patch } : r)) };
+}
+
 interface RegisterResult {
   registration: Registration;
   duplicate: boolean;
@@ -74,14 +115,30 @@ interface RegisterResult {
 
 interface BiomatesDataContextValue {
   events: BiomatesEvent[];
+  adminAccounts: AdminAccount[];
+  messageLogs: MessageBatchLog[];
+  emailLogs: EmailBatchLog[];
   isHydrated: boolean;
   getEvent: (eventId: string) => BiomatesEvent | undefined;
   activeRegistrationsForEvent: (eventId: string) => Registration[];
+  registrationsForEvent: (eventId: string) => Registration[];
   myRegistrations: () => Registration[];
   getRegistration: (registrationId: string) => Registration | undefined;
   registerForEvent: (eventId: string, values: RegistrationFormValues) => RegisterResult;
   createEvent: (values: EventFormValues) => BiomatesEvent;
   updateEvent: (eventId: string, values: EventFormValues) => void;
+  setSurveyFormUrl: (eventId: string, url: string) => void;
+  markPaid: (registrationId: string) => void;
+  cancelRegistration: (registrationId: string) => void;
+  completeRefund: (registrationId: string) => void;
+  checkIn: (registrationId: string) => void;
+  undoCheckIn: (registrationId: string) => void;
+  markAttended: (registrationId: string) => void;
+  markNoShow: (registrationId: string) => void;
+  sendMessages: (eventId: string, registrationIds: string[], templateKey: MessageTemplateKey, body: string) => void;
+  sendSurveyEmails: (eventId: string, registrationIds: string[], subject: string, body: string) => void;
+  addAdminAccount: (name: string, email: string) => void;
+  removeAdminAccount: (id: string) => void;
 }
 
 const BiomatesDataContext = createContext<BiomatesDataContextValue | null>(null);
@@ -95,6 +152,11 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const activeRegistrationsForEvent = useCallback(
     (eventId: string) =>
       state.registrations.filter((r) => r.eventId === eventId && r.registrationStatus !== "CANCELLED"),
+    [state.registrations]
+  );
+
+  const registrationsForEvent = useCallback(
+    (eventId: string) => state.registrations.filter((r) => r.eventId === eventId),
     [state.registrations]
   );
 
@@ -136,6 +198,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
       checkinAt: null,
       depositorName: values.name,
       note: "",
+      smsLog: [],
+      emailLog: [],
     };
 
     updateState((prev) => ({
@@ -165,16 +229,143 @@ export function DataProvider({ children }: { children: ReactNode }) {
     }));
   }, []);
 
+  const setSurveyFormUrl = useCallback((eventId: string, url: string) => {
+    updateState((prev) => ({
+      ...prev,
+      events: prev.events.map((e) => (e.id === eventId ? { ...e, surveyFormUrl: url } : e)),
+    }));
+  }, []);
+
+  const markPaid = useCallback((registrationId: string) => {
+    updateState((prev) => patchRegistration(prev, registrationId, { paymentStatus: "PAID", registrationStatus: "CONFIRMED" }));
+  }, []);
+
+  const cancelRegistration = useCallback((registrationId: string) => {
+    updateState((prev) => {
+      const reg = prev.registrations.find((r) => r.id === registrationId);
+      if (!reg) return prev;
+      const paymentStatus = reg.paymentStatus === "PAID" ? "REFUND_PENDING" : reg.paymentStatus;
+      return patchRegistration(prev, registrationId, { registrationStatus: "CANCELLED", paymentStatus });
+    });
+  }, []);
+
+  const completeRefund = useCallback((registrationId: string) => {
+    updateState((prev) => patchRegistration(prev, registrationId, { paymentStatus: "REFUNDED" }));
+  }, []);
+
+  const checkIn = useCallback((registrationId: string) => {
+    updateState((prev) =>
+      patchRegistration(prev, registrationId, { registrationStatus: "CHECKED_IN", checkinAt: new Date().toISOString() })
+    );
+  }, []);
+
+  const undoCheckIn = useCallback((registrationId: string) => {
+    updateState((prev) => patchRegistration(prev, registrationId, { registrationStatus: "CONFIRMED", checkinAt: null }));
+  }, []);
+
+  const markAttended = useCallback((registrationId: string) => {
+    updateState((prev) => patchRegistration(prev, registrationId, { registrationStatus: "ATTENDED" }));
+  }, []);
+
+  const markNoShow = useCallback((registrationId: string) => {
+    updateState((prev) => patchRegistration(prev, registrationId, { registrationStatus: "NO_SHOW" }));
+  }, []);
+
+  const sendMessages = useCallback(
+    (eventId: string, registrationIds: string[], templateKey: MessageTemplateKey, body: string) => {
+      updateState((prev) => {
+        const event = prev.events.find((e) => e.id === eventId);
+        if (!event || !registrationIds.length) return prev;
+        const now = new Date().toISOString();
+        const targets = prev.registrations.filter((r) => registrationIds.includes(r.id));
+        const registrations = prev.registrations.map((r) =>
+          registrationIds.includes(r.id)
+            ? { ...r, smsLog: [...(r.smsLog ?? []), { templateKey, body: resolveTemplate(body, r, event), sentAt: now }] }
+            : r
+        );
+        const batch: MessageBatchLog = {
+          id: `msg-${Date.now()}`,
+          eventId,
+          templateKey,
+          recipientCount: targets.length,
+          recipientNames: targets.map((r) => r.name),
+          sentAt: now,
+        };
+        return { ...prev, registrations, messageLogs: [batch, ...prev.messageLogs] };
+      });
+    },
+    []
+  );
+
+  const sendSurveyEmails = useCallback((eventId: string, registrationIds: string[], subject: string, body: string) => {
+    updateState((prev) => {
+      const event = prev.events.find((e) => e.id === eventId);
+      if (!event || !registrationIds.length) return prev;
+      const now = new Date().toISOString();
+      const targets = prev.registrations.filter((r) => registrationIds.includes(r.id));
+      const registrations = prev.registrations.map((r) =>
+        registrationIds.includes(r.id)
+          ? {
+              ...r,
+              emailLog: [
+                ...(r.emailLog ?? []),
+                { subject: resolveTemplate(subject, r, event), body: resolveTemplate(body, r, event), sentAt: now },
+              ],
+            }
+          : r
+      );
+      const batch: EmailBatchLog = {
+        id: `email-${Date.now()}`,
+        eventId,
+        subject,
+        recipientCount: targets.length,
+        recipientNames: targets.map((r) => r.name),
+        sentAt: now,
+      };
+      return { ...prev, registrations, emailLogs: [batch, ...prev.emailLogs] };
+    });
+  }, []);
+
+  const addAdminAccount = useCallback((name: string, email: string) => {
+    updateState((prev) => ({
+      ...prev,
+      adminAccounts: [...prev.adminAccounts, { id: `admin-${Date.now()}`, name, email }],
+    }));
+  }, []);
+
+  const removeAdminAccount = useCallback((id: string) => {
+    updateState((prev) => {
+      if (prev.adminAccounts.length <= 1) return prev;
+      return { ...prev, adminAccounts: prev.adminAccounts.filter((a) => a.id !== id) };
+    });
+  }, []);
+
   const value: BiomatesDataContextValue = {
     events: state.events,
+    adminAccounts: state.adminAccounts,
+    messageLogs: state.messageLogs,
+    emailLogs: state.emailLogs,
     isHydrated,
     getEvent,
     activeRegistrationsForEvent,
+    registrationsForEvent,
     myRegistrations,
     getRegistration,
     registerForEvent,
     createEvent,
     updateEvent,
+    setSurveyFormUrl,
+    markPaid,
+    cancelRegistration,
+    completeRefund,
+    checkIn,
+    undoCheckIn,
+    markAttended,
+    markNoShow,
+    sendMessages,
+    sendSurveyEmails,
+    addAdminAccount,
+    removeAdminAccount,
   };
 
   return <BiomatesDataContext.Provider value={value}>{children}</BiomatesDataContext.Provider>;

@@ -83,6 +83,8 @@ export interface Registration {
   checkinAt: string | null;
   depositorName: string;
   note: string;
+  smsLog?: MessageLogEntry[];
+  emailLog?: EmailLogEntry[];
 }
 
 export interface RegistrationFormValues {
@@ -129,4 +131,42 @@ export interface EventFormErrors {
   date?: string;
   venue?: string;
   capacity?: string;
+}
+
+export interface AdminAccount {
+  id: string;
+  name: string;
+  email: string;
+}
+
+export type MessageTemplateKey = "payment" | "paidConfirm" | "cancelRefund" | "reminder" | "custom";
+
+export interface MessageLogEntry {
+  templateKey: MessageTemplateKey;
+  body: string;
+  sentAt: string;
+}
+
+export interface EmailLogEntry {
+  subject: string;
+  body: string;
+  sentAt: string;
+}
+
+export interface MessageBatchLog {
+  id: string;
+  eventId: string;
+  templateKey: MessageTemplateKey;
+  recipientCount: number;
+  recipientNames: string[];
+  sentAt: string;
+}
+
+export interface EmailBatchLog {
+  id: string;
+  eventId: string;
+  subject: string;
+  recipientCount: number;
+  recipientNames: string[];
+  sentAt: string;
 }

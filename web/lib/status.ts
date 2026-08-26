@@ -71,13 +71,31 @@ export function statusGuidance(reg: Registration, event: BiomatesEvent): string 
   }
 }
 
-/** Admin-facing combined label per guide §4.3 / §5.1 (kept here for reuse once Admin is built). */
+/**
+ * Admin-facing combined label per guide §4.3 / §5.1. The "신청상태+결제상태를 합친"
+ * merge only adds real information while someone is still in the REGISTERED/
+ * PAYMENT_PENDING/CANCELLED range — once they're CONFIRMED or further along,
+ * REG_LABEL is already the more specific, useful label (and folding everything
+ * post-payment into "신청완료(결제완료)" would make CONFIRMED, CHECKED_IN,
+ * ATTENDED, and NO_SHOW visually indistinguishable in the table).
+ */
 export function combinedStatusLabel(reg: Registration): string {
   if (reg.registrationStatus === "CANCELLED") {
     if (reg.paymentStatus === "REFUND_PENDING") return "취소(환불대기)";
     if (reg.paymentStatus === "REFUNDED") return "취소(환불완료)";
     return "취소";
   }
-  if (reg.paymentStatus === "PAID") return "신청완료(결제완료)";
-  return "신청완료(결제대기)";
+  if (reg.registrationStatus === "REGISTERED" || reg.registrationStatus === "PAYMENT_PENDING") {
+    return reg.paymentStatus === "PAID" ? "신청완료(결제완료)" : "신청완료(결제대기)";
+  }
+  return REG_LABEL[reg.registrationStatus];
+}
+
+/** Pill tone to match {@link combinedStatusLabel}. */
+export function combinedStatusTone(reg: Registration): "neutral" | "warn" | "accent" | "success" | "danger" {
+  if (reg.registrationStatus === "CANCELLED") return "neutral";
+  if (reg.registrationStatus === "REGISTERED" || reg.registrationStatus === "PAYMENT_PENDING") {
+    return reg.paymentStatus === "PAID" ? "accent" : "warn";
+  }
+  return REG_TONE[reg.registrationStatus];
 }

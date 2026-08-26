@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTheme } from "@/lib/theme-context";
+import { useAdminAuth } from "@/lib/auth-context";
 
 const NAV_ITEMS = [
   { href: "/", label: "Home" },
@@ -14,6 +15,8 @@ const NAV_ITEMS = [
 export function SiteHeader() {
   const pathname = usePathname();
   const { isDark, toggleTheme } = useTheme();
+  const { currentAdmin, logout } = useAdminAuth();
+  const onAdminRoute = pathname.startsWith("/admin");
 
   return (
     <header className="topbar">
@@ -46,9 +49,18 @@ export function SiteHeader() {
         })}
       </nav>
       <div className="topbar-controls">
-        <Link href="/admin/events" className="btn btn-ghost btn-sm" aria-current={pathname.startsWith("/admin") ? "page" : undefined}>
-          Admin
-        </Link>
+        {onAdminRoute && currentAdmin ? (
+          <>
+            <span className="faint">{currentAdmin.name}님</span>
+            <button type="button" className="btn btn-ghost btn-sm" onClick={logout}>
+              로그아웃
+            </button>
+          </>
+        ) : (
+          <Link href="/admin/dashboard" className="btn btn-ghost btn-sm" aria-current={onAdminRoute ? "page" : undefined}>
+            Admin
+          </Link>
+        )}
         <button
           type="button"
           className="icon-btn"

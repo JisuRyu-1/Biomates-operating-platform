@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 import { Orbitron } from "next/font/google";
 import "./globals.css";
 import { DataProvider } from "@/lib/data-context";
+import { AuthProvider } from "@/lib/auth-context";
 import { ThemeProvider } from "@/lib/theme-context";
 import { ToastProvider } from "@/components/Toast";
 import { SiteHeader } from "@/components/SiteHeader";
@@ -39,11 +40,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ThemeProvider>
           <ToastProvider>
             <DataProvider>
-              <div className="page">
-                <SiteHeader />
-                <main className="app-shell">{children}</main>
-              </div>
-              <MobileBottomNav />
+              <AuthProvider>
+                <div className="page">
+                  <SiteHeader />
+                  <main className="app-shell">{children}</main>
+                </div>
+                <MobileBottomNav />
+              </AuthProvider>
             </DataProvider>
           </ToastProvider>
         </ThemeProvider>

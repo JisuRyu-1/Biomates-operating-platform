@@ -5,7 +5,7 @@ import { useBiomatesData } from "@/lib/data-context";
 import { fmtDate, fmtMoney } from "@/lib/format";
 
 export default function AdminEventsPage() {
-  const { events, activeRegistrationsForEvent } = useBiomatesData();
+  const { events, activeRegistrationsForEvent, setEventPublished } = useBiomatesData();
 
   return (
     <div className="stack">
@@ -39,6 +39,13 @@ export default function AdminEventsPage() {
                   </p>
                 </div>
                 <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-ghost"
+                    onClick={() => setEventPublished(ev.id, !ev.published)}
+                  >
+                    {ev.published ? "비공개로 전환" : "공개로 전환"}
+                  </button>
                   <Link href={`/admin/events/${ev.id}/edit`} className="btn btn-sm btn-ghost">
                     수정
                   </Link>

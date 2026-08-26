@@ -124,6 +124,7 @@ interface BiomatesDataContextValue {
   createEvent: (values: EventFormValues) => BiomatesEvent;
   updateEvent: (eventId: string, values: EventFormValues) => void;
   setSurveyFormUrl: (eventId: string, url: string) => void;
+  setEventPublished: (eventId: string, published: boolean) => void;
   markPaid: (registrationId: string) => void;
   cancelRegistration: (registrationId: string) => void;
   completeRefund: (registrationId: string) => void;
@@ -247,6 +248,13 @@ export function DataProvider({ children }: { children: ReactNode }) {
     updateState((prev) => ({
       ...prev,
       events: prev.events.map((e) => (e.id === eventId ? { ...e, surveyFormUrl: url } : e)),
+    }));
+  }, []);
+
+  const setEventPublished = useCallback((eventId: string, published: boolean) => {
+    updateState((prev) => ({
+      ...prev,
+      events: prev.events.map((e) => (e.id === eventId ? { ...e, published } : e)),
     }));
   }, []);
 
@@ -376,6 +384,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     createEvent,
     updateEvent,
     setSurveyFormUrl,
+    setEventPublished,
     markPaid,
     cancelRegistration,
     completeRefund,

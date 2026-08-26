@@ -32,7 +32,7 @@ function NametagCell({ registration }: { registration: Registration | null }) {
   return (
     <div className="nametag-cell">
       {/* eslint-disable-next-line @next/next/no-img-element -- print sheet, not a responsive UI image */}
-      <img className="nametag-logo" src="/brand/biomates-logo-dark-navy.png" alt="BioMates" />
+      <img className="nametag-logo" src="/brand/biomates-logo-full.png" alt="BioMates" />
       <div className="nametag-name" style={{ fontSize: nameFontSizePt(registration.name) }}>
         {registration.name}
       </div>

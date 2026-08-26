@@ -166,7 +166,9 @@ function ParticipantsWorkspace({ event, initialParams }: { event: BiomatesEvent;
       {panel === "nametags" && <NametagPanel recipients={selectedList} onClose={() => setPanel(null)} />}
       {panel === "survey" && <SurveyPanel event={event} recipients={selectedList} onClose={() => setPanel(null)} onSent={clearSelection} />}
 
-      <ParticipantsTable event={event} registrations={filtered} selected={selected} onToggleOne={toggleOne} onToggleAll={toggleAll} />
+      <div className="no-print">
+        <ParticipantsTable event={event} registrations={filtered} selected={selected} onToggleOne={toggleOne} onToggleAll={toggleAll} />
+      </div>
     </div>
   );
 }

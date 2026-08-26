@@ -101,3 +101,32 @@ export interface RegistrationFormErrors {
   email?: string;
   consent?: string;
 }
+
+export interface EventFormValues {
+  title: string;
+  subtitle: string;
+  status: EventStatus;
+  date: string;
+  time: string;
+  venue: string;
+  mapUrl: string;
+  capacity: number;
+  fee: number;
+  registrationStart: string;
+  registrationEnd: string;
+  audience: string;
+  program: ProgramItem[];
+  speakers: Speaker[];
+  prep: string[];
+  refundPolicy: string;
+  contact: string;
+  bankInfo: BankInfo | null;
+  published: boolean;
+}
+
+export interface EventFormErrors {
+  title?: string;
+  date?: string;
+  venue?: string;
+  capacity?: string;
+}

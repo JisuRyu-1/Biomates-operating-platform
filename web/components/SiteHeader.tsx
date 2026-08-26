@@ -45,15 +45,20 @@ export function SiteHeader() {
           );
         })}
       </nav>
-      <button
-        type="button"
-        className="icon-btn"
-        onClick={toggleTheme}
-        aria-pressed={isDark}
-        aria-label={isDark ? "라이트 모드로 전환" : "다크 모드로 전환"}
-      >
-        {isDark ? "☀︎" : "☾"}
-      </button>
+      <div className="topbar-controls">
+        <Link href="/admin/events" className="btn btn-ghost btn-sm" aria-current={pathname.startsWith("/admin") ? "page" : undefined}>
+          Admin
+        </Link>
+        <button
+          type="button"
+          className="icon-btn"
+          onClick={toggleTheme}
+          aria-pressed={isDark}
+          aria-label={isDark ? "라이트 모드로 전환" : "다크 모드로 전환"}
+        >
+          {isDark ? "☀︎" : "☾"}
+        </button>
+      </div>
     </header>
   );
 }

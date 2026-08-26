@@ -118,7 +118,12 @@ export default function EventDetailPage() {
                     className="chip chip-btn"
                     aria-haspopup="dialog"
                     onClick={() => setActiveSpeaker(s)}
+                    style={{ display: "inline-flex", alignItems: "center", gap: 6 }}
                   >
+                    {s.bio.photoUrl && (
+                      // eslint-disable-next-line @next/next/no-img-element -- data URL from local mock storage
+                      <img className="speaker-avatar-sm" src={s.bio.photoUrl} alt="" />
+                    )}
                     {s.name} · {s.org} <span aria-hidden="true" style={{ opacity: 0.7 }}>ⓘ</span>
                   </button>
                 ) : (

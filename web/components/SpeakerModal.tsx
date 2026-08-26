@@ -56,9 +56,14 @@ export function SpeakerModal({ speaker, onClose }: SpeakerModalProps) {
       }}
     >
       <div className="speaker-modal" ref={modalRef}>
-        <div className="speaker-modal-photo speaker-modal-photo-fallback" aria-hidden="true">
-          {speaker.name.slice(0, 1)}
-        </div>
+        {speaker.bio?.photoUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element -- data URL from local mock storage, not a static asset next/image can optimize
+          <img className="speaker-modal-photo" src={speaker.bio.photoUrl} alt={`${speaker.name} 사진`} />
+        ) : (
+          <div className="speaker-modal-photo speaker-modal-photo-fallback" aria-hidden="true">
+            {speaker.name.slice(0, 1)}
+          </div>
+        )}
         <h3 className="h2 brand-font" id="speaker-modal-title" style={{ textAlign: "center" }}>
           {speaker.name}
         </h3>

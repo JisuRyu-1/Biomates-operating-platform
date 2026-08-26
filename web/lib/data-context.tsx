@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useCallback, useContext, useSyncExternalStore, type ReactNode } from "react";
-import type { BiomatesEvent, Registration, RegistrationFormValues } from "./types";
+import type { BiomatesEvent, EventFormValues, Registration, RegistrationFormValues } from "./types";
 import { seedEvents } from "./seed-data";
 import { initialStatusFor } from "./status";
 
@@ -80,6 +80,8 @@ interface BiomatesDataContextValue {
   myRegistrations: () => Registration[];
   getRegistration: (registrationId: string) => Registration | undefined;
   registerForEvent: (eventId: string, values: RegistrationFormValues) => RegisterResult;
+  createEvent: (values: EventFormValues) => BiomatesEvent;
+  updateEvent: (eventId: string, values: EventFormValues) => void;
 }
 
 const BiomatesDataContext = createContext<BiomatesDataContextValue | null>(null);
@@ -145,6 +147,24 @@ export function DataProvider({ children }: { children: ReactNode }) {
     return { registration, duplicate: false };
   }, []);
 
+  const createEvent = useCallback((values: EventFormValues): BiomatesEvent => {
+    const event: BiomatesEvent = {
+      id: `evt-${Date.now()}`,
+      ...values,
+      resources: [],
+      surveyFormUrl: "",
+    };
+    updateState((prev) => ({ ...prev, events: [...prev.events, event] }));
+    return event;
+  }, []);
+
+  const updateEvent = useCallback((eventId: string, values: EventFormValues) => {
+    updateState((prev) => ({
+      ...prev,
+      events: prev.events.map((e) => (e.id === eventId ? { ...e, ...values } : e)),
+    }));
+  }, []);
+
   const value: BiomatesDataContextValue = {
     events: state.events,
     isHydrated,
@@ -153,6 +173,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
     myRegistrations,
     getRegistration,
     registerForEvent,
+    createEvent,
+    updateEvent,
   };
 
   return <BiomatesDataContext.Provider value={value}>{children}</BiomatesDataContext.Provider>;

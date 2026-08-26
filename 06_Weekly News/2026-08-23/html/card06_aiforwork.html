@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../assets/styles.css">
+<style>
+  body { margin:0; }
+  .card.tint { background: linear-gradient(180deg, rgba(64,224,208,0.14) 0%, rgba(64,224,208,0.05) 100%), var(--offwhite); }
+  .trend-note { display:inline-block; margin-top:16px; font-family:'Pretendard',sans-serif; font-weight:600; font-size:19px;
+    color:var(--navy); opacity:0.6; border:1.5px dashed rgba(30,42,56,0.35); border-radius:999px; padding:8px 18px; }
+  .headline-lg { font-size:50px; margin-top:20px; }
+  .fact-lg { font-size:25px; margin-top:22px; max-width:900px; }
+  .ba-row { display:flex; gap:22px; margin-top:24px; }
+  .ba-col { flex:1; background:rgba(255,255,255,0.7); border-radius:10px; padding:18px 20px; }
+  .ba-label { font-family:'Orbitron',sans-serif; font-weight:700; font-size:15px; letter-spacing:0.08em; color:var(--navy); opacity:0.45; }
+  .ba-text { font-family:'Pretendard',sans-serif; font-weight:600; font-size:19px; margin-top:8px; color:var(--navy); line-height:1.4; }
+  .try-box { margin-top:20px; background:rgba(255,255,255,0.85); border:2px solid var(--turquoise); border-radius:10px;
+    padding:18px 22px; font-family:'Pretendard',sans-serif; }
+  .try-label { font-weight:700; font-size:16px; color:var(--navy); opacity:0.6; margin-bottom:6px; display:block;
+    font-family:'Orbitron',sans-serif; letter-spacing:0.06em; }
+  .try-text { font-weight:500; font-size:20px; color:var(--navy); line-height:1.42; }
+  .warn-lg { margin-top:16px; font-size:19px; }
+</style>
+</head>
+<body>
+<div class="card light tint">
+  <div class="content-layer">
+    <div class="kicker">AI FOR WORK · TREND</div>
+    <div class="trend-note">⏱ 이번 주 발표 아닙니다 — 5~7월에 걸친 흐름입니다</div>
+
+    <div class="headline on-light headline-lg">여러 AI 도구를 오가던 업무,
+이제 Copilot 안에서 Claude로 끝냅니다</div>
+
+    <div class="body-text fact-lg">Microsoft 365 Copilot Chat·Excel·PowerPoint·Copilot Studio에서
+모델을 Claude(Opus 계열 포함)로 직접 선택할 수 있습니다. 복잡한
+분석, 문서 이해, 구조화된 콘텐츠 생성에 활용할 수 있습니다.</div>
+
+    <div class="ba-row">
+      <div class="ba-col"><div class="ba-label">BEFORE</div><div class="ba-text">복잡한 문서 분석·구조화된 콘텐츠 작성이 필요하면
+        Microsoft 365 밖의 다른 AI 도구로 이동</div></div>
+      <div class="ba-col"><div class="ba-label">AFTER</div><div class="ba-text">Copilot Chat/Excel/PowerPoint 안에서 모델을
+        Claude로 바꿔 그대로 작업</div></div>
+    </div>
+
+    <div class="try-box">
+      <span class="try-label">TRY THIS MONDAY</span>
+      <span class="try-text">"Copilot Chat에서 모델을 Claude로 바꿔서, 규제 문서나 여러
+        파일을 한 번에 비교·분석해보세요."</span>
+    </div>
+
+    <div class="warn-box warn-lg">⚠️ 회사의 Microsoft 365 정책에서 Claude 모델 사용이 허용되는지
+      먼저 확인해 주세요. Claude로 처리되는 데이터가 회사 데이터
+      정책과 맞는지도 확인이 필요합니다.</div>
+
+    <div class="footer-row">
+      <div class="source-caption">SOURCE: Microsoft Learn 릴리즈 노트 (16 Jun / 28 May / Jul 2026) — TREND</div>
+      <div class="page-index">06 / 07</div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

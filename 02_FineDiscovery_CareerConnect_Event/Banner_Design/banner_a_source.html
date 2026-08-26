@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    width: 400px;
+    height: 1200px;
+    overflow: hidden;
+    background: #fff;
+    font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', sans-serif;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── 상단 로고 헤더 ── */
+  .top-header {
+    padding: 28px 28px 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid #F0F2F4;
+    flex-wrap: nowrap;
+  }
+  .top-header img.bm { height: 20px; width: auto; flex-shrink: 0; }
+  .top-header img.fd { height: 14px; width: auto; flex-shrink: 0; }
+  .top-header .x { font-size: 14px; color: #C9D0D8; font-weight: 200; flex-shrink: 0; }
+
+  /* ── 메인 헤드라인 영역 ── */
+  .headline-area {
+    padding: 28px 32px 24px;
+    background: #fff;
+  }
+  .hl-label {
+    display: inline-block;
+    background: #E8FAF8;
+    color: #00C4B2;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 5px 12px;
+    border-radius: 20px;
+    margin-bottom: 14px;
+  }
+  .hl-main {
+    font-size: 30px;
+    font-weight: 900;
+    color: #1C2B4A;
+    line-height: 1.25;
+    letter-spacing: -0.8px;
+    margin-bottom: 14px;
+  }
+  .hl-sub {
+    font-size: 12px;
+    color: #6B7280;
+    line-height: 1.7;
+    font-weight: 400;
+  }
+
+  /* ── 구분선 ── */
+  .divider {
+    height: 1px;
+    background: #F0F2F4;
+    margin: 0 32px;
+  }
+
+  /* ── 특징 블록 ── */
+  .features {
+    padding: 24px 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .feature-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+  }
+  .feat-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #E8FAF8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .feat-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #1C2B4A;
+    margin-bottom: 4px;
+  }
+  .feat-desc {
+    font-size: 11px;
+    color: #6B7280;
+    line-height: 1.6;
+  }
+
+  /* ── 이벤트 정보 섹션 ── */
+  .info-section {
+    margin: 0 32px;
+    background: #F4FFFE;
+    border: 1px solid #C8F0EC;
+    border-radius: 14px;
+    padding: 22px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .info-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .info-icon-wrap {
+    width: 32px;
+    height: 32px;
+    background: #fff;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    flex-shrink: 0;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+  .info-label {
+    font-size: 9px;
+    color: #9CA3AF;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 3px;
+    font-weight: 600;
+  }
+  .info-val {
+    font-size: 13px;
+    font-weight: 700;
+    color: #1C2B4A;
+    line-height: 1.4;
+  }
+  .info-val small {
+    display: block;
+    font-size: 11px;
+    color: #6B7280;
+    font-weight: 400;
+    margin-top: 2px;
+  }
+
+  /* ── spacer ── */
+  .spacer { flex: 1; }
+
+  /* ── 하단 로고 푸터 ── */
+  .footer {
+    padding: 20px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-top: 1px solid #F0F2F4;
+    flex-shrink: 0;
+  }
+  .footer img.fd-foot { height: 20px; width: auto; }
+  .footer img.bm-foot { height: 38px; width: auto; }
+</style>
+</head>
+<body>
+
+  <!-- 상단 로고 헤더 -->
+  <div class="top-header">
+    <img class="bm" src="BioMates_dark_navy.png" alt="BioMates">
+    <span class="x">×</span>
+    <img class="fd" src="fine discovery logo.png" alt="Fine Discovery">
+  </div>
+
+  <!-- 메인 헤드라인 -->
+  <div class="headline-area">
+    <div class="hl-label">Career Connect</div>
+    <div class="hl-main">글로벌 바이오 커리어,<br>현직 리더에게 듣다</div>
+    <div class="hl-sub">바이오 산업의 최전선에서 활동 중인 두 리더가<br>커리어 여정과 인사이트를 공유합니다.</div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- 특징 3가지 -->
+  <div class="features">
+    <div class="feature-item">
+      <div class="feat-icon">👥</div>
+      <div>
+        <div class="feat-title">현직 리더 인사이트</div>
+        <div class="feat-desc">글로벌 바이오 기업 리더들의 생생한 커리어 스토리</div>
+      </div>
+    </div>
+    <div class="feature-item">
+      <div class="feat-icon">📈</div>
+      <div>
+        <div class="feat-title">성장과 커리어 전략</div>
+        <div class="feat-desc">헬스케어 산업 트렌드와 직업 역량,<br>커리어 성장 전략을 함께 합니다</div>
+      </div>
+    </div>
+    <div class="feature-item">
+      <div class="feat-icon">🤝</div>
+      <div>
+        <div class="feat-title">네트워킹 기회</div>
+        <div class="feat-desc">참석자 간 교류를 통한 네트워킹과 커리어 확장 기회</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 이벤트 정보 -->
+  <div class="info-section">
+    <div class="info-row">
+      <div class="info-icon-wrap">📅</div>
+      <div>
+        <div class="info-label">일 시</div>
+        <div class="info-val">2026년 7월 16일 (목)<small>오후 7시 – 8시</small></div>
+      </div>
+    </div>
+    <div class="info-row">
+      <div class="info-icon-wrap">📍</div>
+      <div>
+        <div class="info-label">장 소</div>
+        <div class="info-val">동국대학교 서울캠퍼스</div>
+        <div class="info-val">원흥관 3층 i-SPACE</div>
+      </div>
+    </div>
+    <div class="info-row">
+      <div class="info-icon-wrap">🎓</div>
+      <div>
+        <div class="info-label">대 상</div>
+        <div class="info-val" style="font-size:12px;">바이오/헬스케어 분야 진로에 관심 있는<small>대학생 및 대학원생 누구나</small></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="spacer"></div>
+
+  <!-- 하단 로고 -->
+  <div class="footer">
+    <img class="fd-foot" src="fine discovery logo.png" alt="Fine Discovery">
+    <img class="bm-foot" src="New Logo.png" alt="BioMates">
+  </div>
+
+</body>
+</html>

@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../assets/styles.css">
+<style>
+  body { margin:0; }
+  .cover-mast { font-size:40px; }
+  .cover-series { font-family:'Orbitron',sans-serif; font-weight:600; font-size:18px; letter-spacing:0.18em; color:#fff; opacity:0.75; }
+  .cover-headline { font-size:76px; margin-top:56px; }
+  .cover-sub { font-family:'Pretendard',sans-serif; font-weight:600; font-size:26px; color:var(--turquoise); margin-top:34px; letter-spacing:0.01em; }
+  .cover-date { font-family:'Orbitron',sans-serif; font-weight:600; font-size:19px; letter-spacing:0.12em; color:#fff; opacity:0.6; margin-top:14px; }
+  .cover-caption { font-family:'Pretendard',sans-serif; font-weight:500; font-size:22px; color:#fff; opacity:0.55; }
+</style>
+</head>
+<body>
+<div class="card dark">
+  <svg class="network-bg" viewBox="0 0 1080 1080" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <filter id="blur1" x="-50%" y="-50%" width="200%" height="200%">
+        <feGaussianBlur stdDeviation="70"/>
+      </filter>
+      <filter id="blur2" x="-50%" y="-50%" width="200%" height="200%">
+        <feGaussianBlur stdDeviation="45"/>
+      </filter>
+    </defs>
+    <rect width="1080" height="1080" fill="#1E2A38"/>
+    <circle cx="900" cy="180" r="150" fill="#40E0D0" opacity="0.20" filter="url(#blur1)"/>
+    <circle cx="1000" cy="330" r="90" fill="#FFFFFF" opacity="0.10" filter="url(#blur2)"/>
+    <circle cx="140" cy="900" r="170" fill="#40E0D0" opacity="0.16" filter="url(#blur1)"/>
+    <circle cx="280" cy="1000" r="80" fill="#FFFFFF" opacity="0.08" filter="url(#blur2)"/>
+    <g stroke="#40E0D0" stroke-width="1.2" opacity="0.35">
+      <line x1="800" y1="260" x2="940" y2="360"/>
+      <line x1="940" y1="360" x2="1020" y2="500"/>
+      <line x1="800" y1="260" x2="880" y2="150"/>
+      <line x1="220" y1="870" x2="140" y2="980"/>
+      <line x1="220" y1="870" x2="350" y2="940"/>
+      <line x1="350" y1="940" x2="320" y2="1050"/>
+    </g>
+    <g fill="#40E0D0" opacity="0.65">
+      <circle cx="800" cy="260" r="4"/>
+      <circle cx="940" cy="360" r="3.5"/>
+      <circle cx="1020" cy="500" r="3"/>
+      <circle cx="880" cy="150" r="3"/>
+      <circle cx="220" cy="870" r="4"/>
+      <circle cx="140" cy="980" r="3"/>
+      <circle cx="350" cy="940" r="3.5"/>
+      <circle cx="320" cy="1050" r="3"/>
+    </g>
+  </svg>
+
+  <div class="content-layer">
+    <div class="masthead cover-mast">BioMates</div>
+    <div class="cover-series">MEDTECH WEEKLY</div>
+
+    <div class="headline on-dark cover-headline">이번 주 의료기기 업계에서
+놓치면 안 될 4가지</div>
+
+    <div class="cover-sub">진단 · 의료기기 · 체외진단(IVD)</div>
+    <div class="cover-date">WEEKLY BRIEF | 2026.08.11–08.21</div>
+
+    <div class="footer-row">
+      <div class="cover-caption">국내외 소식을 균형 있게 정리했습니다.</div>
+      <div class="page-index on-dark">01 / 07</div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

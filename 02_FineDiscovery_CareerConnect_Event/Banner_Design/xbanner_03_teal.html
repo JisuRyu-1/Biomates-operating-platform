@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>X-Banner 03 — Teal</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #c0c0c0;
+    display: flex;
+    justify-content: center;
+    padding: 40px;
+    font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', sans-serif;
+  }
+
+  .banner {
+    width: 400px;
+    height: 1200px;
+    background: #00D4BC;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Large circle decoration top right */
+  .deco-circle-1 {
+    position: absolute;
+    width: 360px;
+    height: 360px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.07);
+    top: -80px;
+    right: -80px;
+    pointer-events: none;
+  }
+  .deco-circle-2 {
+    position: absolute;
+    width: 240px;
+    height: 240px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.05);
+    bottom: 120px;
+    left: -80px;
+    pointer-events: none;
+  }
+  /* Small accent lines */
+  .deco-lines {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-image:
+      repeating-linear-gradient(
+        -45deg,
+        transparent,
+        transparent 40px,
+        rgba(255,255,255,0.03) 40px,
+        rgba(255,255,255,0.03) 41px
+      );
+    pointer-events: none;
+  }
+
+  /* ── TOP LOGO ── */
+  .logo-block {
+    margin-top: 50px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    position: relative;
+    z-index: 2;
+  }
+  .logo-block img { width: 72px; height: auto; }
+  .brand-name {
+    font-size: 24px;
+    font-weight: 800;
+    color: #fff;
+    letter-spacing: -0.3px;
+  }
+  .brand-sub {
+    font-size: 10px;
+    color: rgba(255,255,255,0.65);
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+  }
+
+  /* ── RULE ── */
+  .rule {
+    width: 40px;
+    height: 2px;
+    background: rgba(255,255,255,0.4);
+    margin: 30px 0;
+    position: relative;
+    z-index: 2;
+  }
+
+  /* ── WHITE CARD (main content) ── */
+  .card {
+    width: calc(100% - 48px);
+    background: #fff;
+    border-radius: 16px;
+    padding: 32px 28px;
+    position: relative;
+    z-index: 2;
+    flex-shrink: 0;
+  }
+
+  .collab-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .collab-row img { height: 18px; width: auto; }
+  .collab-row .x { font-size: 14px; color: #C4C4C4; }
+
+  .card-event-sub {
+    font-size: 10px;
+    color: #9CA3AF;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .card-event-name {
+    font-size: 40px;
+    font-weight: 900;
+    color: #1C2B4A;
+    line-height: 1.0;
+    letter-spacing: -1.5px;
+    margin-bottom: 24px;
+  }
+  .card-event-name span { color: #00D4BC; }
+
+  /* Info rows in card */
+  .card-info {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding-top: 20px;
+    border-top: 1px solid #F3F4F6;
+  }
+  .card-info-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .ci-icon {
+    width: 22px;
+    height: 22px;
+    background: #F0FCFA;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .ci-label {
+    font-size: 9px;
+    color: #9CA3AF;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-bottom: 3px;
+  }
+  .ci-value {
+    font-size: 13px;
+    font-weight: 700;
+    color: #1C2B4A;
+    line-height: 1.3;
+  }
+  .ci-value small {
+    display: block;
+    font-size: 10px;
+    color: #9CA3AF;
+    font-weight: 400;
+    margin-top: 2px;
+  }
+
+  /* ── SPEAKERS (below card) ── */
+  .speakers-block {
+    width: calc(100% - 48px);
+    margin-top: 20px;
+    position: relative;
+    z-index: 2;
+  }
+  .sp-label {
+    font-size: 9px;
+    color: rgba(255,255,255,0.6);
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    text-align: center;
+  }
+  .sp-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(255,255,255,0.12);
+    border-radius: 10px;
+    padding: 11px 14px;
+    margin-bottom: 8px;
+  }
+  .sp-avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    color: #fff;
+    flex-shrink: 0;
+  }
+  .sp-name { font-size: 13px; font-weight: 700; color: #fff; margin-bottom: 2px; }
+  .sp-org { font-size: 10px; color: rgba(255,255,255,0.6); margin-bottom: 4px; }
+  .sp-topic { font-size: 10px; color: rgba(255,255,255,0.85); line-height: 1.3; }
+
+  /* ── SPACER ── */
+  .spacer { flex: 1; }
+
+  /* ── QR BOTTOM ── */
+  .qr-bottom {
+    position: relative;
+    z-index: 2;
+    margin-bottom: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 0 0 20px;
+  }
+  .qr-label-text {
+    font-size: 9px;
+    color: rgba(255,255,255,0.5);
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+  }
+  .qr-box {
+    background: #fff;
+    padding: 7px;
+    border-radius: 8px;
+  }
+  .qr-box img { width: 62px; height: 62px; display: block; }
+
+  /* ── BOTTOM BAR ── */
+  .bottom-bar {
+    width: 100%;
+    background: rgba(0,0,0,0.12);
+    padding: 13px 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 2;
+  }
+  .bottom-bar img { height: 20px; width: auto; opacity: 0.55; filter: brightness(10); }
+  .bottom-bar span {
+    font-size: 9px;
+    color: rgba(255,255,255,0.45);
+    letter-spacing: 0.5px;
+  }
+</style>
+</head>
+<body>
+<div class="banner">
+  <div class="deco-lines"></div>
+  <div class="deco-circle-1"></div>
+  <div class="deco-circle-2"></div>
+
+  <!-- Logo -->
+  <div class="logo-block">
+    <img src="BioMates_white.png" alt="BioMates">
+    <div class="brand-name">BioMates</div>
+    <div class="brand-sub">Where Bio Meets People</div>
+  </div>
+
+  <div class="rule"></div>
+
+  <!-- White card -->
+  <div class="card">
+    <div class="collab-row">
+      <img src="BioMates_dark_navy.png" alt="BioMates">
+      <span class="x">×</span>
+      <img src="fine discovery logo.png" alt="Fine Discovery">
+    </div>
+    <div class="card-event-sub">Networking Event</div>
+    <div class="card-event-name">Career<br><span>Connect</span></div>
+    <div class="card-info">
+      <div class="card-info-row">
+        <div class="ci-icon">📅</div>
+        <div>
+          <div class="ci-label">Date</div>
+          <div class="ci-value">2025년 7월 16일 (목)<small>오후 7:00 – 8:00</small></div>
+        </div>
+      </div>
+      <div class="card-info-row">
+        <div class="ci-icon">📍</div>
+        <div>
+          <div class="ci-label">Venue</div>
+          <div class="ci-value">동국대학교 서울캠퍼스<small>서울 중구 필동로1길 30</small></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Speakers -->
+  <div class="speakers-block">
+    <div class="sp-label">Speakers</div>
+    <div class="sp-row">
+      <div class="sp-avatar">김</div>
+      <div>
+        <div class="sp-name">김지호 대표 · Fine Discovery</div>
+        <div class="sp-topic">"헤드헌터가 말하는 '진짜 인재'의 조건"</div>
+      </div>
+    </div>
+    <div class="sp-row">
+      <div class="sp-avatar">이</div>
+      <div>
+        <div class="sp-name">이연재 대표 · Recordati Asia</div>
+        <div class="sp-topic">"헬스케어 리더에게 듣는 성장과 커리어"</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="spacer"></div>
+
+  <!-- QR -->
+  <div class="qr-bottom">
+    <div class="qr-label-text">Register</div>
+    <div class="qr-box"><img src="QR-re.png" alt="QR"></div>
+  </div>
+
+  <!-- Bottom bar -->
+  <div class="bottom-bar">
+    <img src="동국대학교 logo.png" alt="동국대학교">
+    <span>동국대학교 서울캠퍼스 후원</span>
+  </div>
+</div>
+</body>
+</html>

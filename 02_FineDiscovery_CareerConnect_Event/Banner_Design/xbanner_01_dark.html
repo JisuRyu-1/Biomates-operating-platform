@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>X-Banner 01 — Dark</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #e8e8e8;
+    display: flex;
+    justify-content: center;
+    padding: 40px;
+    font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', sans-serif;
+  }
+
+  /* 600mm × 1800mm → 1:3 ratio → 400px × 1200px */
+  .banner {
+    width: 400px;
+    height: 1200px;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  /* LinkedIn PNG as background */
+  .bg-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center top;
+  }
+
+  /* Dark navy overlay */
+  .bg-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(28, 43, 74, 0.90);
+  }
+
+  /* All content sits above bg */
+  .content {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100%;
+  }
+
+  /* Top accent bar */
+  .top-bar {
+    width: 100%;
+    height: 5px;
+    background: #00D4BC;
+    flex-shrink: 0;
+  }
+
+  /* ── LOGO BLOCK ── */
+  .logo-block {
+    margin-top: 50px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+  .logo-block img.biomates-logo { width: 76px; height: auto; }
+  .brand-sub {
+    font-size: 10px;
+    color: #00D4BC;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    font-weight: 400;
+  }
+
+  .rule {
+    width: 40px;
+    height: 2px;
+    background: #00D4BC;
+    margin: 30px 0;
+  }
+
+  /* ── HEADLINE ── */
+  .headline {
+    text-align: center;
+    padding: 0 36px;
+  }
+  .collab-line {
+    font-size: 11px;
+    color: rgba(255,255,255,0.4);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+  .event-name {
+    font-size: 46px;
+    font-weight: 900;
+    color: #fff;
+    line-height: 1.0;
+    letter-spacing: -1.5px;
+  }
+  .event-name .teal { color: #00D4BC; }
+  .event-type {
+    font-size: 11px;
+    color: rgba(255,255,255,0.3);
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    margin-top: 12px;
+    font-weight: 300;
+  }
+
+  /* ── PARTNER LOGOS ── */
+  .partners {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    margin: 32px 0 0;
+  }
+  /* BioMates: already white version */
+  .partners img.biomates-sm { height: 20px; width: auto; opacity: 0.8; }
+  /* Fine Discovery: original is dark teal → invert to white on dark bg */
+  .partners img.fd-logo {
+    height: 20px;
+    width: auto;
+    filter: brightness(0) invert(1);
+    opacity: 0.75;
+  }
+  .x-mark { font-size: 16px; color: rgba(255,255,255,0.25); font-weight: 200; }
+
+  /* ── INFO BLOCK ── */
+  .info-block {
+    margin: 40px 32px 0;
+    width: calc(100% - 64px);
+    border-top: 1px solid rgba(255,255,255,0.08);
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    padding: 26px 0;
+  }
+  .info-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 18px;
+  }
+  .info-row:last-child { margin-bottom: 0; }
+  .info-label {
+    font-size: 9px;
+    color: #00D4BC;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    width: 44px;
+    flex-shrink: 0;
+    padding-top: 3px;
+    font-weight: 600;
+  }
+  .info-value {
+    font-size: 14px;
+    color: #fff;
+    font-weight: 600;
+    line-height: 1.5;
+  }
+  .info-value small {
+    display: block;
+    font-size: 11px;
+    color: rgba(255,255,255,0.4);
+    font-weight: 400;
+    margin-top: 2px;
+  }
+
+  .spacer { flex: 1; }
+
+  /* ── QR BLOCK ── */
+  .qr-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+  .qr-label {
+    font-size: 9px;
+    color: rgba(255,255,255,0.35);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+  }
+  .qr-wrap { background: #fff; padding: 7px; border-radius: 8px; }
+  .qr-wrap img { width: 66px; height: 66px; display: block; }
+
+  /* ── BOTTOM BAR ── */
+  .bottom-bar {
+    width: 100%;
+    height: 48px;
+    background: rgba(0,212,188,0.08);
+    border-top: 1px solid rgba(0,212,188,0.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    flex-shrink: 0;
+  }
+  /* 동국대 로고: white on dark */
+  .bottom-bar img.dongguk {
+    height: 20px;
+    width: auto;
+    filter: brightness(0) invert(1);
+    opacity: 0.45;
+  }
+  .bottom-bar span {
+    font-size: 9px;
+    color: rgba(255,255,255,0.25);
+    letter-spacing: 1px;
+  }
+</style>
+</head>
+<body>
+<div class="banner">
+  <!-- LinkedIn PNG as background -->
+  <img class="bg-img" src="linkedin_career_connect.png" alt="">
+  <div class="bg-overlay"></div>
+
+  <div class="content">
+    <div class="top-bar"></div>
+
+    <div class="logo-block">
+      <img class="biomates-logo" src="BioMates_white.png" alt="BioMates">
+      <div class="brand-sub">Where Bio Meets People</div>
+    </div>
+
+    <div class="rule"></div>
+
+    <div class="headline">
+      <div class="collab-line">BioMates × Fine Discovery</div>
+      <div class="event-name">Career<br><span class="teal">Connect</span></div>
+      <div class="event-type">Networking Event</div>
+    </div>
+
+    <div class="partners">
+      <img class="biomates-sm" src="BioMates_white.png" alt="BioMates">
+      <div class="x-mark">×</div>
+      <!-- Fine Discovery: white filter on dark bg -->
+      <img class="fd-logo" src="fine discovery logo.png" alt="Fine Discovery">
+    </div>
+
+    <div class="info-block">
+      <div class="info-row">
+        <div class="info-label">Date</div>
+        <div class="info-value">2026년 7월 16일 (목)<small>오후 7:00 – 8:00</small></div>
+      </div>
+      <div class="info-row">
+        <div class="info-label">Venue</div>
+        <div class="info-value">동국대학교 서울캠퍼스<small>서울 중구 필동로1길 30</small></div>
+      </div>
+    </div>
+
+    <div class="spacer"></div>
+
+    <div class="qr-block">
+      <div class="qr-label">Register</div>
+      <div class="qr-wrap"><img src="QR-re.png" alt="QR"></div>
+    </div>
+
+    <div class="bottom-bar">
+      <img class="dongguk" src="동국대학교 logo.png" alt="동국대학교">
+      <span>동국대학교 서울캠퍼스</span>
+    </div>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,246 @@
+/* BioMates MedTech Weekly — shared card styles (1080x1080) */
+
+@font-face {
+  font-family: 'Pretendard';
+  font-weight: 400;
+  src: url('./fonts/Pretendard-Regular.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Pretendard';
+  font-weight: 500;
+  src: url('./fonts/Pretendard-Medium.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Pretendard';
+  font-weight: 600;
+  src: url('./fonts/Pretendard-SemiBold.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Pretendard';
+  font-weight: 700;
+  src: url('./fonts/Pretendard-Bold.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Pretendard';
+  font-weight: 900;
+  src: url('./fonts/Pretendard-Black.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Orbitron';
+  font-weight: 500 900;
+  src: url('./fonts/Orbitron-Variable.woff2') format('woff2');
+}
+
+:root {
+  --navy: #1E2A38;
+  --white: #FFFFFF;
+  --offwhite: #F6F6F4;
+  --black: #111111;
+  --turquoise: #40E0D0;
+  --coral: #FF6B6B;
+  --turquoise-tint: rgba(64, 224, 208, 0.12);
+  --turquoise-tint-strong: rgba(64, 224, 208, 0.22);
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+
+.card {
+  width: 1080px;
+  height: 1080px;
+  position: relative;
+  overflow: hidden;
+  font-family: 'Pretendard', -apple-system, sans-serif;
+  display: flex;
+  flex-direction: column;
+  padding: 80px;
+}
+
+.card.dark {
+  background: var(--navy);
+  color: var(--white);
+}
+.card.light {
+  background: var(--offwhite);
+  color: var(--navy);
+}
+
+/* ---- Network glow background (cover / takeaway) ---- */
+.network-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+.content-layer {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* ---- Typography ---- */
+.kicker {
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 700;
+  font-size: 22px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--turquoise);
+}
+.kicker.on-dark { color: var(--turquoise); }
+.kicker.warn { color: var(--coral); }
+
+.masthead {
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--turquoise);
+}
+
+.headline {
+  font-family: 'Pretendard', sans-serif;
+  font-weight: 900;
+  line-height: 1.18;
+  letter-spacing: -0.01em;
+  white-space: pre-line;
+}
+.headline.on-light { color: var(--navy); }
+.headline.on-dark { color: var(--white); }
+
+.hook {
+  font-family: 'Pretendard', sans-serif;
+  font-weight: 500;
+  color: var(--navy);
+  opacity: 0.62;
+  line-height: 1.45;
+  white-space: pre-line;
+}
+.hook.on-dark { color: var(--white); opacity: 0.72; }
+
+.body-text {
+  font-family: 'Pretendard', sans-serif;
+  font-weight: 500;
+  line-height: 1.55;
+  color: var(--navy);
+}
+.body-text.on-dark { color: var(--white); }
+
+.impact-box {
+  background: var(--turquoise-tint);
+  border-left: 6px solid var(--turquoise);
+  border-radius: 4px;
+  padding: 28px 32px;
+  font-family: 'Pretendard', sans-serif;
+}
+.impact-box .impact-label {
+  font-weight: 700;
+  font-size: 24px;
+  margin-bottom: 10px;
+  display: block;
+  color: var(--navy);
+}
+.impact-box .impact-text {
+  font-weight: 500;
+  font-size: 26px;
+  line-height: 1.5;
+  color: var(--navy);
+}
+
+.warn-box {
+  background: rgba(255, 107, 107, 0.10);
+  border-left: 6px solid var(--coral);
+  border-radius: 4px;
+  padding: 22px 28px;
+  font-family: 'Pretendard', sans-serif;
+  font-weight: 500;
+  font-size: 24px;
+  line-height: 1.5;
+  color: var(--navy);
+}
+
+.diagram-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  font-family: 'Pretendard', sans-serif;
+  font-weight: 600;
+  font-size: 21px;
+}
+.diagram-chip {
+  border: 2px solid var(--turquoise);
+  color: var(--navy);
+  border-radius: 999px;
+  padding: 10px 20px;
+  white-space: nowrap;
+}
+.diagram-arrow {
+  color: var(--turquoise);
+  font-weight: 700;
+  font-size: 24px;
+}
+.diagram-row.on-dark .diagram-chip { color: var(--white); border-color: var(--turquoise); }
+
+.stat-row {
+  display: flex;
+  gap: 20px;
+}
+.stat-card {
+  flex: 1;
+  background: rgba(255,255,255,0.7);
+  border: 2px solid var(--turquoise);
+  border-radius: 12px;
+  padding: 22px 20px;
+  text-align: center;
+}
+.stat-value {
+  font-family: 'Pretendard', sans-serif;
+  font-weight: 900;
+  font-size: 40px;
+  color: var(--navy);
+}
+.stat-label {
+  font-family: 'Pretendard', sans-serif;
+  font-weight: 600;
+  font-size: 18px;
+  color: var(--navy);
+  opacity: 0.6;
+  margin-top: 6px;
+}
+
+.source-caption {
+  font-family: 'Pretendard', sans-serif;
+  font-weight: 500;
+  font-size: 20px;
+  letter-spacing: 0.02em;
+  color: var(--navy);
+  opacity: 0.55;
+}
+.source-caption.on-dark { color: var(--white); opacity: 0.55; }
+
+.page-index {
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 700;
+  font-size: 20px;
+  color: var(--navy);
+  opacity: 0.35;
+}
+.page-index.on-dark { color: var(--white); opacity: 0.4; }
+
+.footer-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-top: auto;
+  padding-top: 24px;
+}
+
+.pill {
+  display: inline-block;
+  font-family: 'Pretendard', sans-serif;
+  font-weight: 600;
+  font-size: 22px;
+  color: var(--navy);
+  opacity: 0.7;
+}

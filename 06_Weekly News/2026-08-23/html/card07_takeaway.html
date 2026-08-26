@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../assets/styles.css">
+<style>
+  body { margin:0; }
+  .tw-kicker { font-family:'Orbitron',sans-serif; font-weight:700; font-size:22px; letter-spacing:0.12em; color:var(--turquoise); }
+  .flow-row { display:flex; align-items:center; flex-wrap:wrap; gap:8px; margin-top:34px; }
+  .flow-chip { font-family:'Pretendard',sans-serif; font-weight:600; font-size:20px; color:#fff; opacity:0.85;
+    border:1.5px solid rgba(64,224,208,0.55); border-radius:999px; padding:9px 18px; }
+  .flow-arrow { color:var(--turquoise); font-weight:700; }
+  .tw-message { font-family:'Pretendard',sans-serif; font-weight:900; font-size:46px; line-height:1.34; color:#fff;
+    margin-top:44px; white-space:pre-line; }
+  .tw-question { margin-top:40px; font-family:'Pretendard',sans-serif; font-weight:600; font-size:26px; color:#fff; opacity:0.85; }
+</style>
+</head>
+<body>
+<div class="card dark">
+  <svg class="network-bg" viewBox="0 0 1080 1080" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <filter id="blur1" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="70"/></filter>
+      <filter id="blur2" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="45"/></filter>
+    </defs>
+    <rect width="1080" height="1080" fill="#1E2A38"/>
+    <circle cx="160" cy="160" r="160" fill="#40E0D0" opacity="0.18" filter="url(#blur1)"/>
+    <circle cx="50" cy="50" r="80" fill="#FFFFFF" opacity="0.08" filter="url(#blur2)"/>
+    <circle cx="960" cy="930" r="180" fill="#40E0D0" opacity="0.17" filter="url(#blur1)"/>
+    <circle cx="1040" cy="810" r="70" fill="#FFFFFF" opacity="0.09" filter="url(#blur2)"/>
+    <g stroke="#40E0D0" stroke-width="1.2" opacity="0.32">
+      <line x1="210" y1="240" x2="310" y2="180"/>
+      <line x1="310" y1="180" x2="280" y2="70"/>
+      <line x1="210" y1="240" x2="130" y2="320"/>
+      <line x1="910" y1="860" x2="970" y2="770"/>
+      <line x1="910" y1="860" x2="830" y2="930"/>
+      <line x1="830" y1="930" x2="860" y2="1020"/>
+    </g>
+    <g fill="#40E0D0" opacity="0.65">
+      <circle cx="210" cy="240" r="4"/><circle cx="310" cy="180" r="3.5"/><circle cx="280" cy="70" r="3"/>
+      <circle cx="130" cy="320" r="3"/><circle cx="910" cy="860" r="4"/><circle cx="970" cy="770" r="3"/>
+      <circle cx="830" cy="930" r="3.5"/><circle cx="860" cy="1020" r="3"/>
+    </g>
+  </svg>
+
+  <div class="content-layer">
+    <div class="tw-kicker">THIS WEEK'S TAKEAWAY</div>
+
+    <div class="flow-row">
+      <span class="flow-chip">소비자 기기</span><span class="flow-arrow">→</span>
+      <span class="flow-chip">치료보조 로봇</span><span class="flow-arrow">→</span>
+      <span class="flow-chip">진단 전 단계 SW</span><span class="flow-arrow">→</span>
+      <span class="flow-chip">치료제 설계·제조</span>
+    </div>
+
+    <div class="tw-message" style="font-size:40px;">의료기기가 되는 방법도,
+<span style="color:var(--turquoise);">AI가 쓰이는 자리도 다양해지고 있습니다.</span>
+
+이어버드도, 로봇도, 품질관리 소프트웨어도
+조건을 갖추면 의료기기가 됩니다.
+
+그리고 이제 AI는 진단을 돕는 것을 넘어
+치료제가 무엇을 표적으로 삼을지
+골라내는 데까지 <span style="color:var(--turquoise);">쓰이기 시작했습니다.</span></div>
+
+    <div class="footer-row" style="margin-top:auto;">
+      <div class="tw-question">여러분의 산업에서, "AI가 다음으로 들어올 자리"는<br>어디라고 생각하시나요?</div>
+    </div>
+    <div class="footer-row" style="margin-top:18px;">
+      <div class="masthead" style="font-size:24px;">BioMates</div>
+      <div class="page-index on-dark">07 / 07</div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

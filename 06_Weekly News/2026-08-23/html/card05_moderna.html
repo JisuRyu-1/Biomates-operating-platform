@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../assets/styles.css">
+<style>
+  body { margin:0; }
+  .trend-note { display:inline-block; margin-top:16px; font-family:'Pretendard',sans-serif; font-weight:600; font-size:18px;
+    color:var(--navy); opacity:0.6; border:1.5px dashed rgba(30,42,56,0.35); border-radius:999px; padding:8px 18px; }
+  .headline-lg { font-size:48px; margin-top:20px; }
+  .hook-lg { font-size:24px; margin-top:20px; }
+  .fact-lg { font-size:24px; margin-top:22px; max-width:900px; }
+  .diagram-lg { margin-top:26px; }
+  .diagram-row .diagram-chip { font-size:18px; padding:9px 16px; }
+  .impact-lg { margin-top:22px; padding:22px 26px; }
+  .impact-lg .impact-text { font-size:22px; }
+  .warn-lg { margin-top:16px; font-size:19px; padding:18px 24px; }
+</style>
+</head>
+<body>
+<div class="card light">
+  <div class="content-layer">
+    <div class="kicker">DRUG DEVELOPMENT · AI</div>
+    <div class="trend-note">⚠ 의료기기·IVD 범위 밖 예외 카드입니다 — AI가 신약 설계까지 확장되는 흐름이라 이번 주 한정 포함</div>
+
+    <div class="headline on-light headline-lg">이번 주는 '진단'이 아니라 '치료'입니다
+AI가 고른 표적으로 만든 암 백신, 임상 3상을 통과했습니다</div>
+
+    <div class="hook on-light hook-lg">AI는 백신을 발명하지 않았습니다. 수천 개의 돌연변이 후보 중
+무엇을 표적으로 삼을지 골라냈을 뿐입니다.</div>
+
+    <div class="body-text fact-lg">Moderna와 Merck가 공동 개발한 개인 맞춤형 mRNA 항암치료제
+'intismeran autogene'이 Keytruda와 병용 투여된 임상 3상
+(INTerpath-001, 흑색종 환자 1,137명)에서 1차 지표(무재발생존)와
+2차 지표(원격전이 없는 생존)를 모두 충족했다고 2026년 8월 19일
+발표했습니다. mRNA 기반 항암백신이 대규모 3상에서 성공한 것은
+이번이 처음입니다.</div>
+
+    <div class="diagram-row diagram-lg">
+      <span class="diagram-chip">Tumor DNA</span><span class="diagram-arrow">→</span>
+      <span class="diagram-chip">AI Neoantigen Prediction (≤34)</span><span class="diagram-arrow">→</span>
+      <span class="diagram-chip">Personalized mRNA Vaccine</span><span class="diagram-arrow">→</span>
+      <span class="diagram-chip">Phase 3 Success</span>
+    </div>
+
+    <div class="impact-box impact-lg">
+      <span class="impact-label">🇰🇷 한국에는?</span>
+      <span class="impact-text">국내 기업 사례는 아니지만, AI가 진단을 넘어 치료제 설계·제조
+        오퍼레이션까지 들어오는 흐름은 국내 AI 바이오마커·mRNA 신약
+        개발사에도 참고가 될 수 있습니다.</span>
+    </div>
+
+    <div class="warn-box warn-lg">⚠️ 이번 발표는 임상 3상 topline 결과입니다. 아직 FDA 등
+      규제기관의 정식 허가를 받은 단계는 아니며, AI의 역할은
+      neoantigen 후보 예측·선별과 제조 일정 최적화('Maestro')로
+      한정됩니다.</div>
+
+    <div class="footer-row">
+      <div class="source-caption">SOURCE: Moderna·Merck 공식 발표, 19 Aug 2026 (Phase 3 INTerpath-001)</div>
+      <div class="page-index">05 / 07</div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

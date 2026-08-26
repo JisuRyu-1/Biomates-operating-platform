@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>X-Banner A — with 동국대</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    width: 400px;
+    height: 1200px;
+    overflow: hidden;
+    font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', sans-serif;
+  }
+
+  /* 600mm × 1800mm → 1:3 → 400px × 1200px */
+  .banner {
+    width: 400px;
+    height: 1200px;
+    background: #00C4B2;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  /* ── SVG 네트워크 패턴 배경 ── */
+  .bg-pattern {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+
+  /* ── 모든 콘텐츠 ── */
+  .content {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100%;
+  }
+
+  /* ── 헤더 ── */
+  .header-area {
+    padding: 48px 36px 34px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .header-area img.bm-logo { width: 150px; height: auto; }
+  .rule {
+    width: 36px;
+    height: 1.5px;
+    background: rgba(255,255,255,0.4);
+    margin-top: 20px;
+  }
+
+  /* ── 흰 카드 ── */
+  .card {
+    width: calc(100% - 40px);
+    background: #fff;
+    border-radius: 18px;
+    padding: 28px 26px 26px;
+    margin-top: 18px;
+    flex-shrink: 0;
+  }
+
+  .logo-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+  /* 카드(흰 배경) — BioMates: 다크네이비, Fine Discovery: 원본 다크틸 */
+  .logo-row img.bm-card { height: 16px; width: auto; }
+  .logo-row img.fd-card { height: 16px; width: auto; }
+  .x-sep { font-size: 13px; color: #C9D0D8; font-weight: 300; }
+
+  .card-sub {
+    font-size: 9px;
+    color: #9CA3AF;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 5px;
+  }
+  .card-title {
+    font-size: 54px;
+    font-weight: 900;
+    line-height: 1.0;
+    letter-spacing: -2px;
+    margin-bottom: 22px;
+  }
+  .card-title .l1 { color: #1C2B4A; display: block; }
+  .card-title .l2 { color: #00C4B2; display: block; }
+
+  .info-section {
+    border-top: 1px solid #F0F2F4;
+    padding-top: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 13px;
+  }
+  .info-row { display: flex; align-items: flex-start; gap: 11px; }
+  .info-icon { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+  .lbl {
+    font-size: 9px;
+    color: #9CA3AF;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 3px;
+    font-weight: 500;
+  }
+  .val { font-size: 15px; font-weight: 700; color: #1C2B4A; line-height: 1.25; }
+  .sub { font-size: 11px; color: #9CA3AF; margin-top: 2px; }
+
+  /* ── 스피커 ── */
+  .speakers-area {
+    width: calc(100% - 40px);
+    margin-top: 16px;
+    flex-shrink: 0;
+  }
+  .sp-label {
+    font-size: 9px;
+    color: rgba(255,255,255,0.6);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    text-align: center;
+    margin-bottom: 9px;
+  }
+  .sp-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(255,255,255,0.14);
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 8px;
+  }
+  .sp-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.22);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 700;
+    color: #fff;
+    flex-shrink: 0;
+  }
+  .sp-name { font-size: 13px; font-weight: 700; color: #fff; margin-bottom: 3px; }
+  .sp-topic { font-size: 10px; color: rgba(255,255,255,0.8); line-height: 1.35; }
+
+  .spacer { flex: 1; }
+
+  /* ── 동국대 하단 바 ── */
+  .bottom-bar {
+    width: 100%;
+    padding: 13px 36px;
+    background: rgba(0,0,0,0.10);
+    border-top: 1px solid rgba(255,255,255,0.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 11px;
+    flex-shrink: 0;
+  }
+  /* 동국대 로고: teal 배경 → white */
+  .bottom-bar img.dongguk {
+    height: 22px;
+    width: auto;
+    filter: brightness(0) invert(1);
+    opacity: 0.5;
+  }
+  .bottom-bar span { font-size: 9px; color: rgba(255,255,255,0.38); letter-spacing: 0.5px; }
+</style>
+</head>
+<body>
+<div class="banner">
+
+  <!-- SVG 네트워크 패턴 배경 -->
+  <svg class="bg-pattern" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <!-- 400×420 타일 패턴 — 세로 반복 -->
+      <pattern id="net" x="0" y="0" width="400" height="420" patternUnits="userSpaceOnUse">
+        <!-- 흐르는 곡선들 -->
+        <g stroke="rgba(255,255,255,0.18)" stroke-width="0.65" fill="none">
+          <path d="M-5,12  C65,30  128,155 188,150 C248,145 288,68  405,53"/>
+          <path d="M-5,30  C63,49  126,166 186,162 C246,158 286,82  405,69"/>
+          <path d="M-5,52  C60,72  122,177 183,173 C244,169 283,97  405,86"/>
+          <path d="M-5,78  C57,98  118,188 180,184 C242,180 280,112 405,104"/>
+          <path d="M-5,108 C54,128 114,198 176,195 C238,192 277,128 405,124"/>
+          <path d="M-5,143 C51,161 110,208 172,205 C234,202 274,146 405,146"/>
+          <path d="M-5,182 C48,198 106,218 168,215 C230,212 271,164 405,168"/>
+          <path d="M-5,222 C46,235  101,230 163,226 C226,222 268,183 405,190"/>
+          <path d="M-5,258 C44,268  96,245 158,240 C222,235 264,200 405,212"/>
+          <path d="M-5,292 C42,300  91,260 153,254 C218,248 260,218 405,234"/>
+          <path d="M-5,323 C40,330  87,276 148,268 C215,260 256,235 405,254"/>
+          <path d="M-5,350 C38,355  83,292 144,283 C212,274 252,250 405,272"/>
+          <path d="M-5,374 C36,378  79,308 140,298 C208,288 248,265 405,290"/>
+          <path d="M-5, -2 C67,14  131,146 191,142 C251,138 290,58  405,40"/>
+        </g>
+        <!-- 노드 dots -->
+        <g fill="rgba(255,255,255,0.22)">
+          <!-- 왼쪽 클러스터 -->
+          <circle cx="60"  cy="72"  r="4.5"/>
+          <circle cx="48"  cy="108" r="6.5"/>
+          <circle cx="42"  cy="148" r="2.5"/>
+          <circle cx="38"  cy="188" r="3.5"/>
+          <circle cx="54"  cy="52"  r="2"/>
+          <circle cx="32"  cy="225" r="2"/>
+          <!-- 중앙 수렴 클러스터 -->
+          <circle cx="180" cy="182" r="8"/>
+          <circle cx="188" cy="152" r="5"/>
+          <circle cx="176" cy="198" r="5.5"/>
+          <circle cx="186" cy="165" r="3"/>
+          <circle cx="173" cy="208" r="3.5"/>
+          <circle cx="183" cy="175" r="2.5"/>
+          <circle cx="190" cy="142" r="2"/>
+          <!-- 위성 소점들 -->
+          <circle cx="193" cy="172" r="1.5"/>
+          <circle cx="178" cy="190" r="1.5"/>
+          <circle cx="184" cy="158" r="1.5"/>
+          <circle cx="170" cy="215" r="1.5"/>
+          <!-- 오른쪽 클러스터 -->
+          <circle cx="280" cy="97"  r="5.5"/>
+          <circle cx="290" cy="76"  r="3"/>
+          <circle cx="274" cy="128" r="6"/>
+          <circle cx="268" cy="148" r="3.5"/>
+          <circle cx="264" cy="168" r="4.5"/>
+          <circle cx="266" cy="190" r="2.5"/>
+          <circle cx="258" cy="215" r="2"/>
+          <!-- 중간 산포 -->
+          <circle cx="118" cy="200" r="4"/>
+          <circle cx="108" cy="178" r="2.5"/>
+          <circle cx="132" cy="160" r="3"/>
+          <circle cx="340" cy="58"  r="3.5"/>
+          <circle cx="358" cy="72"  r="2"/>
+          <circle cx="330" cy="108" r="2.5"/>
+        </g>
+      </pattern>
+    </defs>
+    <rect width="400" height="1200" fill="url(#net)"/>
+  </svg>
+
+  <div class="content">
+    <div class="header-area">
+      <img class="bm-logo" src="New Logo_white.png" alt="BioMates">
+      <div class="rule"></div>
+    </div>
+
+    <div class="card">
+      <div class="logo-row">
+        <img class="bm-card" src="BioMates_dark_navy.png" alt="BioMates">
+        <span class="x-sep">×</span>
+        <!-- Fine Discovery: 카드 흰 배경 → 원본 다크틸 유지 -->
+        <img class="fd-card" src="fine discovery logo.png" alt="Fine Discovery">
+      </div>
+      <div class="card-sub">Networking Event</div>
+      <div class="card-title">
+        <span class="l1">Career</span>
+        <span class="l2">Connect</span>
+      </div>
+      <div class="info-section">
+        <div class="info-row">
+          <span class="info-icon">📅</span>
+          <div>
+            <div class="lbl">Date</div>
+            <div class="val">2026년 7월 16일 (목)</div>
+            <div class="sub">오후 7:00 – 8:00</div>
+          </div>
+        </div>
+        <div class="info-row">
+          <span class="info-icon">📍</span>
+          <div>
+            <div class="lbl">Venue</div>
+            <div class="val">동국대학교 서울캠퍼스</div>
+            <div class="val">원흥관 3층 i-SPACE</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="speakers-area">
+      <div class="sp-label">Speakers</div>
+      <div class="sp-row">
+        <div class="sp-avatar">김</div>
+        <div>
+          <div class="sp-name">김지호 대표 · Fine Discovery</div>
+          <div class="sp-topic">"헤드헌터가 말하는 '진짜 인재'의 조건"</div>
+        </div>
+      </div>
+      <div class="sp-row">
+        <div class="sp-avatar">이</div>
+        <div>
+          <div class="sp-name">이연재 대표 · Recordati Asia</div>
+          <div class="sp-topic">"헬스케어 리더에게 듣는 성장과 커리어"</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="spacer"></div>
+
+    <div class="bottom-bar">
+      <img class="dongguk" src="동국대학교 logo.png" alt="동국대학교">
+      <span>동국대학교 서울캠퍼스 후원</span>
+    </div>
+  </div>
+</div>
+</body>
+</html>

@@ -38,16 +38,18 @@ export function SiteHeader() {
           priority
         />
       </Link>
-      <nav className="topbar-nav" aria-label="주요 메뉴">
-        {NAV_ITEMS.map((item) => {
-          const active = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
-          return (
-            <Link key={item.href} href={item.href} className="nav-link" aria-current={active ? "page" : undefined}>
-              {item.label}
-            </Link>
-          );
-        })}
-      </nav>
+      {!onAdminRoute && (
+        <nav className="topbar-nav" aria-label="주요 메뉴">
+          {NAV_ITEMS.map((item) => {
+            const active = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
+            return (
+              <Link key={item.href} href={item.href} className="nav-link" aria-current={active ? "page" : undefined}>
+                {item.label}
+              </Link>
+            );
+          })}
+        </nav>
+      )}
       <div className="topbar-controls">
         {onAdminRoute && currentAdmin ? (
           <>

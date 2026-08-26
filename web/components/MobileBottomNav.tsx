@@ -12,6 +12,8 @@ const NAV_ITEMS = [
 export function MobileBottomNav() {
   const pathname = usePathname();
 
+  if (pathname.startsWith("/admin")) return null;
+
   return (
     <nav className="mobile-bottom-nav" aria-label="주요 메뉴 (모바일)">
       {NAV_ITEMS.map((item) => {

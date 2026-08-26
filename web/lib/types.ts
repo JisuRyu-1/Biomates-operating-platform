@@ -141,16 +141,27 @@ export interface AdminAccount {
 
 export type MessageTemplateKey = "payment" | "paidConfirm" | "cancelRefund" | "reminder" | "custom";
 
+export type MessageSendStatus = "SENT" | "FAILED";
+export type SmsMessageType = "SMS" | "LMS";
+
 export interface MessageLogEntry {
   templateKey: MessageTemplateKey;
   body: string;
   sentAt: string;
+  status: MessageSendStatus;
+  msgType: SmsMessageType;
+  providerMessageId?: string;
+  errorCode?: string;
+  errorMessage?: string;
 }
 
 export interface EmailLogEntry {
   subject: string;
   body: string;
   sentAt: string;
+  status: MessageSendStatus;
+  providerMessageId?: string;
+  errorMessage?: string;
 }
 
 export interface MessageBatchLog {
@@ -160,6 +171,27 @@ export interface MessageBatchLog {
   recipientCount: number;
   recipientNames: string[];
   sentAt: string;
+  successCount: number;
+  failedCount: number;
+}
+
+/** One recipient's already-merged message, sent from the client to /api/admin/messages/send. */
+export interface SmsSendRequestItem {
+  registrationId: string;
+  phone: string;
+  name: string;
+  message: string;
+}
+
+/** Per-recipient outcome returned by /api/admin/messages/send. */
+export interface SmsSendResult {
+  registrationId: string;
+  phone: string;
+  success: boolean;
+  msgType: SmsMessageType;
+  providerMessageId?: string;
+  errorCode?: string;
+  errorMessage?: string;
 }
 
 export interface EmailBatchLog {
@@ -169,4 +201,24 @@ export interface EmailBatchLog {
   recipientCount: number;
   recipientNames: string[];
   sentAt: string;
+  successCount: number;
+  failedCount: number;
+}
+
+/** One recipient's already-merged email, sent from the client to /api/admin/emails/send. */
+export interface EmailSendRequestItem {
+  registrationId: string;
+  email: string;
+  name: string;
+  subject: string;
+  body: string;
+}
+
+/** Per-recipient outcome returned by /api/admin/emails/send. */
+export interface EmailSendResult {
+  registrationId: string;
+  email: string;
+  success: boolean;
+  providerMessageId?: string;
+  errorMessage?: string;
 }

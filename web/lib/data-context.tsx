@@ -6,13 +6,14 @@ import type {
   EmailBatchLog,
   EventFormValues,
   MessageBatchLog,
+  MessageSendStatus,
   MessageTemplateKey,
   Registration,
   RegistrationFormValues,
+  SmsMessageType,
 } from "./types";
 import { seedEvents } from "./seed-data";
 import { initialStatusFor } from "./status";
-import { resolveTemplate } from "./message-templates";
 
 const STORAGE_KEY = "biomates_web_state_v1";
 
@@ -130,8 +131,29 @@ interface BiomatesDataContextValue {
   undoCheckIn: (registrationId: string) => void;
   markAttended: (registrationId: string) => void;
   markNoShow: (registrationId: string) => void;
-  sendMessages: (eventId: string, registrationIds: string[], templateKey: MessageTemplateKey, body: string) => void;
-  sendSurveyEmails: (eventId: string, registrationIds: string[], subject: string, body: string) => void;
+  recordMessageBatch: (eventId: string, templateKey: MessageTemplateKey, entries: MessageBatchEntry[]) => void;
+  recordEmailBatch: (eventId: string, subject: string, entries: EmailBatchEntry[]) => void;
+}
+
+export interface MessageBatchEntry {
+  registrationId: string;
+  name: string;
+  body: string;
+  status: MessageSendStatus;
+  msgType: SmsMessageType;
+  providerMessageId?: string;
+  errorCode?: string;
+  errorMessage?: string;
+}
+
+export interface EmailBatchEntry {
+  registrationId: string;
+  name: string;
+  subject: string;
+  body: string;
+  status: MessageSendStatus;
+  providerMessageId?: string;
+  errorMessage?: string;
 }
 
 const BiomatesDataContext = createContext<BiomatesDataContextValue | null>(null);
@@ -264,56 +286,79 @@ export function DataProvider({ children }: { children: ReactNode }) {
     updateState((prev) => patchRegistration(prev, registrationId, { registrationStatus: "NO_SHOW" }));
   }, []);
 
-  const sendMessages = useCallback(
-    (eventId: string, registrationIds: string[], templateKey: MessageTemplateKey, body: string) => {
-      updateState((prev) => {
-        const event = prev.events.find((e) => e.id === eventId);
-        if (!event || !registrationIds.length) return prev;
-        const now = new Date().toISOString();
-        const targets = prev.registrations.filter((r) => registrationIds.includes(r.id));
-        const registrations = prev.registrations.map((r) =>
-          registrationIds.includes(r.id)
-            ? { ...r, smsLog: [...(r.smsLog ?? []), { templateKey, body: resolveTemplate(body, r, event), sentAt: now }] }
-            : r
-        );
-        const batch: MessageBatchLog = {
-          id: `msg-${Date.now()}`,
-          eventId,
-          templateKey,
-          recipientCount: targets.length,
-          recipientNames: targets.map((r) => r.name),
-          sentAt: now,
-        };
-        return { ...prev, registrations, messageLogs: [batch, ...prev.messageLogs] };
-      });
-    },
-    []
-  );
-
-  const sendSurveyEmails = useCallback((eventId: string, registrationIds: string[], subject: string, body: string) => {
+  const recordMessageBatch = useCallback((eventId: string, templateKey: MessageTemplateKey, entries: MessageBatchEntry[]) => {
     updateState((prev) => {
-      const event = prev.events.find((e) => e.id === eventId);
-      if (!event || !registrationIds.length) return prev;
+      if (!entries.length) return prev;
       const now = new Date().toISOString();
-      const targets = prev.registrations.filter((r) => registrationIds.includes(r.id));
-      const registrations = prev.registrations.map((r) =>
-        registrationIds.includes(r.id)
-          ? {
-              ...r,
-              emailLog: [
-                ...(r.emailLog ?? []),
-                { subject: resolveTemplate(subject, r, event), body: resolveTemplate(body, r, event), sentAt: now },
-              ],
-            }
-          : r
-      );
+      const entryByRegId = new Map(entries.map((e) => [e.registrationId, e]));
+      const registrations = prev.registrations.map((r) => {
+        const entry = entryByRegId.get(r.id);
+        if (!entry) return r;
+        return {
+          ...r,
+          smsLog: [
+            ...(r.smsLog ?? []),
+            {
+              templateKey,
+              body: entry.body,
+              sentAt: now,
+              status: entry.status,
+              msgType: entry.msgType,
+              providerMessageId: entry.providerMessageId,
+              errorCode: entry.errorCode,
+              errorMessage: entry.errorMessage,
+            },
+          ],
+        };
+      });
+      const successCount = entries.filter((e) => e.status === "SENT").length;
+      const batch: MessageBatchLog = {
+        id: `msg-${Date.now()}`,
+        eventId,
+        templateKey,
+        recipientCount: entries.length,
+        recipientNames: entries.map((e) => e.name),
+        sentAt: now,
+        successCount,
+        failedCount: entries.length - successCount,
+      };
+      return { ...prev, registrations, messageLogs: [batch, ...prev.messageLogs] };
+    });
+  }, []);
+
+  const recordEmailBatch = useCallback((eventId: string, subject: string, entries: EmailBatchEntry[]) => {
+    updateState((prev) => {
+      if (!entries.length) return prev;
+      const now = new Date().toISOString();
+      const entryByRegId = new Map(entries.map((e) => [e.registrationId, e]));
+      const registrations = prev.registrations.map((r) => {
+        const entry = entryByRegId.get(r.id);
+        if (!entry) return r;
+        return {
+          ...r,
+          emailLog: [
+            ...(r.emailLog ?? []),
+            {
+              subject: entry.subject,
+              body: entry.body,
+              sentAt: now,
+              status: entry.status,
+              providerMessageId: entry.providerMessageId,
+              errorMessage: entry.errorMessage,
+            },
+          ],
+        };
+      });
+      const successCount = entries.filter((e) => e.status === "SENT").length;
       const batch: EmailBatchLog = {
         id: `email-${Date.now()}`,
         eventId,
         subject,
-        recipientCount: targets.length,
-        recipientNames: targets.map((r) => r.name),
+        recipientCount: entries.length,
+        recipientNames: entries.map((e) => e.name),
         sentAt: now,
+        successCount,
+        failedCount: entries.length - successCount,
       };
       return { ...prev, registrations, emailLogs: [batch, ...prev.emailLogs] };
     });
@@ -340,8 +385,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
     undoCheckIn,
     markAttended,
     markNoShow,
-    sendMessages,
-    sendSurveyEmails,
+    recordMessageBatch,
+    recordEmailBatch,
   };
 
   return <BiomatesDataContext.Provider value={value}>{children}</BiomatesDataContext.Provider>;

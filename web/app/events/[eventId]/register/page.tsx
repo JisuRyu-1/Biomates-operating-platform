@@ -8,8 +8,12 @@ import { fmtDate } from "@/lib/format";
 
 export default function RegisterPage() {
   const { eventId } = useParams<{ eventId: string }>();
-  const { getEvent } = useBiomatesData();
+  const { getEvent, isHydrated } = useBiomatesData();
   const event = getEvent(eventId);
+
+  if (!isHydrated) {
+    return <div className="card empty-state">불러오는 중…</div>;
+  }
 
   if (!event) {
     return (

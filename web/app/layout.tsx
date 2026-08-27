@@ -41,8 +41,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <ThemeProvider>
           <ToastProvider>
-            <DataProvider>
-              <AuthProvider>
+            <AuthProvider>
+              <DataProvider>
                 <DevicePreviewProvider>
                   <div className="page">
                     <SiteHeader />
@@ -52,8 +52,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   </div>
                   <MobileBottomNav />
                 </DevicePreviewProvider>
-              </AuthProvider>
-            </DataProvider>
+              </DataProvider>
+            </AuthProvider>
           </ToastProvider>
         </ThemeProvider>
       </body>

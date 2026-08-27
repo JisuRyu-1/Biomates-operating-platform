@@ -10,10 +10,14 @@ import type { Speaker } from "@/lib/types";
 
 export default function EventDetailPage() {
   const { eventId } = useParams<{ eventId: string }>();
-  const { getEvent, activeRegistrationsForEvent } = useBiomatesData();
+  const { getEvent, registrationCountForEvent, isHydrated } = useBiomatesData();
   const [activeSpeaker, setActiveSpeaker] = useState<Speaker | null>(null);
 
   const event = getEvent(eventId);
+
+  if (!isHydrated) {
+    return <div className="card empty-state">불러오는 중…</div>;
+  }
 
   if (!event) {
     return (
@@ -26,7 +30,7 @@ export default function EventDetailPage() {
     );
   }
 
-  const regCount = activeRegistrationsForEvent(event.id).length;
+  const regCount = registrationCountForEvent(event.id);
   const isUpcoming = event.status === "UPCOMING";
   const today = todayStr();
   const regOpen = isUpcoming && today >= event.registrationStart && today <= event.registrationEnd && regCount < event.capacity;

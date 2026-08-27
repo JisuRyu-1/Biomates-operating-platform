@@ -4,9 +4,13 @@ import { useBiomatesData } from "@/lib/data-context";
 import { EventCard } from "@/components/EventCard";
 
 export default function HomePage() {
-  const { events } = useBiomatesData();
+  const { events, isHydrated } = useBiomatesData();
   const upcoming = events.filter((e) => e.status === "UPCOMING" && e.published);
   const past = events.filter((e) => e.status === "COMPLETED" && e.published);
+
+  if (!isHydrated) {
+    return <div className="card empty-state">불러오는 중…</div>;
+  }
 
   return (
     <div className="stack">

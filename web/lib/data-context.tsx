@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useCallback, useContext, useSyncExternalStore, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useState, useSyncExternalStore, type ReactNode } from "react";
 import type {
   BiomatesEvent,
   EmailBatchLog,
@@ -12,39 +12,34 @@ import type {
   RegistrationFormValues,
   SmsMessageType,
 } from "./types";
-import { seedEvents } from "./seed-data";
-import { initialStatusFor } from "./status";
+import { createClient } from "./supabase/client";
+import { isSupabaseConfigured } from "./supabase/is-configured";
+import { rowToEvent, rowToRegistration, eventFormValuesToRow } from "./supabase/mappers";
+import { submitRegistration, fetchRegistrationById } from "./registration-api";
+import { useAdminAuth } from "./auth-context";
 
 const STORAGE_KEY = "biomates_web_state_v1";
 
+/**
+ * The only things left in browser-local storage: which registration ids
+ * "belong" to this browser (for My Registration), and the SMS/email send
+ * history summary (not participant data itself, just a convenience log --
+ * see the DB migration plan notes for why this piece stays local for now).
+ * Events/Registrations themselves live in Supabase (see fetch* below).
+ */
 interface PersistedState {
-  events: BiomatesEvent[];
-  registrations: Registration[];
   myRegistrationIds: string[];
   messageLogs: MessageBatchLog[];
   emailLogs: EmailBatchLog[];
 }
 
 function freshState(): PersistedState {
-  return {
-    events: seedEvents(),
-    registrations: [],
-    myRegistrationIds: [],
-    messageLogs: [],
-    emailLogs: [],
-  };
+  return { myRegistrationIds: [], messageLogs: [], emailLogs: [] };
 }
 
-/**
- * Fills in fields that didn't exist yet in state a browser may already have
- * persisted from an earlier version of this app — without this, `.map`/
- * `.filter` on a missing field throws.
- */
 function normalizeState(raw: Partial<PersistedState> | null): PersistedState {
   if (!raw) return freshState();
   return {
-    events: raw.events ?? seedEvents(),
-    registrations: (raw.registrations ?? []).map((r) => ({ ...r, smsLog: r.smsLog ?? [], emailLog: r.emailLog ?? [] })),
     myRegistrationIds: raw.myRegistrationIds ?? [],
     messageLogs: raw.messageLogs ?? [],
     emailLogs: raw.emailLogs ?? [],
@@ -65,16 +60,10 @@ function saveToStorage(state: PersistedState) {
   try {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   } catch {
-    // localStorage unavailable (private mode, quota, etc.) — mock persistence is best-effort.
+    // localStorage unavailable (private mode, quota, etc.) — best-effort.
   }
 }
 
-/**
- * Tiny external store backing the mock "backend". Reading/writing goes
- * through useSyncExternalStore so localStorage hydration never fights
- * React's render (no setState-in-effect), and the store's snapshot
- * reference only changes when the data actually changes.
- */
 const SERVER_SNAPSHOT: PersistedState = freshState();
 let clientState: PersistedState = SERVER_SNAPSHOT;
 const listeners = new Set<() => void>();
@@ -95,14 +84,10 @@ function subscribe(callback: () => void): () => void {
   return () => listeners.delete(callback);
 }
 
-function updateState(updater: (prev: PersistedState) => PersistedState) {
+function updateLocalState(updater: (prev: PersistedState) => PersistedState) {
   clientState = updater(getClientSnapshot());
   saveToStorage(clientState);
   listeners.forEach((l) => l());
-}
-
-function patchRegistration(prev: PersistedState, id: string, patch: Partial<Registration>): PersistedState {
-  return { ...prev, registrations: prev.registrations.map((r) => (r.id === id ? { ...r, ...patch } : r)) };
 }
 
 interface RegisterResult {
@@ -118,22 +103,23 @@ interface BiomatesDataContextValue {
   getEvent: (eventId: string) => BiomatesEvent | undefined;
   activeRegistrationsForEvent: (eventId: string) => Registration[];
   registrationsForEvent: (eventId: string) => Registration[];
+  registrationCountForEvent: (eventId: string) => number;
   myRegistrations: () => Registration[];
-  getRegistration: (registrationId: string) => Registration | undefined;
-  registerForEvent: (eventId: string, values: RegistrationFormValues) => RegisterResult;
-  createEvent: (values: EventFormValues) => BiomatesEvent;
-  updateEvent: (eventId: string, values: EventFormValues) => void;
-  setSurveyFormUrl: (eventId: string, url: string) => void;
-  setEventPublished: (eventId: string, published: boolean) => void;
-  markPaid: (registrationId: string) => void;
-  cancelRegistration: (registrationId: string) => void;
-  completeRefund: (registrationId: string) => void;
-  checkIn: (registrationId: string) => void;
-  undoCheckIn: (registrationId: string) => void;
-  markAttended: (registrationId: string) => void;
-  markNoShow: (registrationId: string) => void;
-  recordMessageBatch: (eventId: string, templateKey: MessageTemplateKey, entries: MessageBatchEntry[]) => void;
-  recordEmailBatch: (eventId: string, subject: string, entries: EmailBatchEntry[]) => void;
+  getRegistration: (registrationId: string) => Promise<Registration | undefined>;
+  registerForEvent: (eventId: string, values: RegistrationFormValues) => Promise<RegisterResult>;
+  createEvent: (values: EventFormValues) => Promise<BiomatesEvent>;
+  updateEvent: (eventId: string, values: EventFormValues) => Promise<void>;
+  setSurveyFormUrl: (eventId: string, url: string) => Promise<void>;
+  setEventPublished: (eventId: string, published: boolean) => Promise<void>;
+  markPaid: (registrationId: string) => Promise<void>;
+  cancelRegistration: (registrationId: string) => Promise<void>;
+  completeRefund: (registrationId: string) => Promise<void>;
+  checkIn: (registrationId: string) => Promise<void>;
+  undoCheckIn: (registrationId: string) => Promise<void>;
+  markAttended: (registrationId: string) => Promise<void>;
+  markNoShow: (registrationId: string) => Promise<void>;
+  recordMessageBatch: (eventId: string, templateKey: MessageTemplateKey, entries: MessageBatchEntry[]) => Promise<void>;
+  recordEmailBatch: (eventId: string, subject: string, entries: EmailBatchEntry[]) => Promise<void>;
 }
 
 export interface MessageBatchEntry {
@@ -159,146 +145,225 @@ export interface EmailBatchEntry {
 const BiomatesDataContext = createContext<BiomatesDataContextValue | null>(null);
 
 export function DataProvider({ children }: { children: ReactNode }) {
-  const state = useSyncExternalStore(subscribe, getClientSnapshot, getServerSnapshot);
-  const isHydrated = state !== SERVER_SNAPSHOT;
+  const local = useSyncExternalStore(subscribe, getClientSnapshot, getServerSnapshot);
+  const { isAuthed } = useAdminAuth();
 
-  const getEvent = useCallback((eventId: string) => state.events.find((e) => e.id === eventId), [state.events]);
+  const [events, setEvents] = useState<BiomatesEvent[]>([]);
+  const [eventsLoaded, setEventsLoaded] = useState(false);
+  const [registrations, setRegistrations] = useState<Registration[]>([]);
+  const [registrationCounts, setRegistrationCounts] = useState<Record<string, number>>({});
+  const [myRegistrationsList, setMyRegistrationsList] = useState<Registration[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function load() {
+      if (!isSupabaseConfigured()) {
+        if (!cancelled) setEventsLoaded(true);
+        return;
+      }
+      const supabase = createClient();
+      const { data } = await supabase.from("events").select("*").order("date", { ascending: true });
+      if (!cancelled) {
+        setEvents((data ?? []).map(rowToEvent));
+        setEventsLoaded(true);
+      }
+    }
+    void load();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function load() {
+      if (!isSupabaseConfigured()) return;
+      const supabase = createClient();
+      const { data } = await supabase.from("registration_counts").select("event_id, active_count");
+      if (cancelled) return;
+      const map: Record<string, number> = {};
+      (data ?? []).forEach((row: { event_id: string; active_count: number }) => {
+        map[row.event_id] = row.active_count;
+      });
+      setRegistrationCounts(map);
+    }
+    void load();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function load() {
+      if (!isAuthed || !isSupabaseConfigured()) {
+        if (!cancelled) setRegistrations([]);
+        return;
+      }
+      const supabase = createClient();
+      const { data } = await supabase.from("registrations").select("*");
+      if (!cancelled) setRegistrations((data ?? []).map(rowToRegistration));
+    }
+    void load();
+    return () => {
+      cancelled = true;
+    };
+  }, [isAuthed]);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function load() {
+      const results = await Promise.all(local.myRegistrationIds.map((id) => fetchRegistrationById(id)));
+      if (!cancelled) setMyRegistrationsList(results.filter((r): r is Registration => Boolean(r)));
+    }
+    void load();
+    return () => {
+      cancelled = true;
+    };
+  }, [local.myRegistrationIds]);
+
+  const getEvent = useCallback((eventId: string) => events.find((e) => e.id === eventId), [events]);
 
   const activeRegistrationsForEvent = useCallback(
-    (eventId: string) =>
-      state.registrations.filter((r) => r.eventId === eventId && r.registrationStatus !== "CANCELLED"),
-    [state.registrations]
+    (eventId: string) => registrations.filter((r) => r.eventId === eventId && r.registrationStatus !== "CANCELLED"),
+    [registrations]
   );
 
   const registrationsForEvent = useCallback(
-    (eventId: string) => state.registrations.filter((r) => r.eventId === eventId),
-    [state.registrations]
+    (eventId: string) => registrations.filter((r) => r.eventId === eventId),
+    [registrations]
   );
 
-  const myRegistrations = useCallback(
-    () => state.registrations.filter((r) => state.myRegistrationIds.includes(r.id)),
-    [state.registrations, state.myRegistrationIds]
-  );
+  const registrationCountForEvent = useCallback((eventId: string) => registrationCounts[eventId] ?? 0, [registrationCounts]);
 
-  const getRegistration = useCallback(
-    (registrationId: string) => state.registrations.find((r) => r.id === registrationId),
-    [state.registrations]
-  );
+  const myRegistrations = useCallback(() => myRegistrationsList, [myRegistrationsList]);
 
-  const registerForEvent = useCallback((eventId: string, values: RegistrationFormValues): RegisterResult => {
-    const current = getClientSnapshot();
-    const event = current.events.find((e) => e.id === eventId);
-    if (!event) throw new Error(`Unknown event: ${eventId}`);
+  const getRegistration = useCallback((registrationId: string) => fetchRegistrationById(registrationId), []);
 
-    const existing = current.registrations.find(
-      (r) => r.eventId === eventId && current.myRegistrationIds.includes(r.id) && r.registrationStatus !== "CANCELLED"
+  const registerForEvent = useCallback(async (eventId: string, values: RegistrationFormValues): Promise<RegisterResult> => {
+    const { duplicate, registration } = await submitRegistration(eventId, values);
+    updateLocalState((prev) =>
+      prev.myRegistrationIds.includes(registration.id)
+        ? prev
+        : { ...prev, myRegistrationIds: [...prev.myRegistrationIds, registration.id] }
     );
-    if (existing) {
-      return { registration: existing, duplicate: true };
-    }
-
-    const { registrationStatus, paymentStatus } = initialStatusFor(event);
-    const registration: Registration = {
-      id: `r-${Date.now()}-${Math.round(Math.random() * 1e6)}`,
-      eventId,
-      name: values.name,
-      email: values.email,
-      phone: values.phone,
-      organization: values.organization,
-      purpose: values.purpose,
-      marketingOptIn: values.marketingOptIn,
-      registrationStatus,
-      paymentStatus,
-      registeredAt: new Date().toISOString(),
-      checkinAt: null,
-      depositorName: values.name,
-      note: "",
-      smsLog: [],
-      emailLog: [],
-    };
-
-    updateState((prev) => ({
-      ...prev,
-      registrations: [...prev.registrations, registration],
-      myRegistrationIds: [...prev.myRegistrationIds, registration.id],
-    }));
-
-    return { registration, duplicate: false };
+    return { registration, duplicate };
   }, []);
 
-  const createEvent = useCallback((values: EventFormValues): BiomatesEvent => {
-    const event: BiomatesEvent = {
-      id: `evt-${Date.now()}`,
-      ...values,
-      resources: [],
-      surveyFormUrl: "",
-    };
-    updateState((prev) => ({ ...prev, events: [...prev.events, event] }));
+  const createEvent = useCallback(async (values: EventFormValues): Promise<BiomatesEvent> => {
+    const id = `evt-${Date.now()}`;
+    const supabase = createClient();
+    const { data, error } = await supabase.from("events").insert(eventFormValuesToRow(id, values)).select("*").single();
+    if (error || !data) throw new Error(error?.message || "행사 생성에 실패했습니다.");
+    const event = rowToEvent(data);
+    setEvents((prev) => [...prev, event]);
     return event;
   }, []);
 
-  const updateEvent = useCallback((eventId: string, values: EventFormValues) => {
-    updateState((prev) => ({
-      ...prev,
-      events: prev.events.map((e) => (e.id === eventId ? { ...e, ...values } : e)),
-    }));
+  const updateEvent = useCallback(async (eventId: string, values: EventFormValues) => {
+    const supabase = createClient();
+    const { error } = await supabase.from("events").update(eventFormValuesToRow(eventId, values)).eq("id", eventId);
+    if (error) {
+      console.error(error);
+      return;
+    }
+    setEvents((prev) => prev.map((e) => (e.id === eventId ? { ...e, ...values } : e)));
   }, []);
 
-  const setSurveyFormUrl = useCallback((eventId: string, url: string) => {
-    updateState((prev) => ({
-      ...prev,
-      events: prev.events.map((e) => (e.id === eventId ? { ...e, surveyFormUrl: url } : e)),
-    }));
+  const setSurveyFormUrl = useCallback(async (eventId: string, url: string) => {
+    const supabase = createClient();
+    const { error } = await supabase.from("events").update({ survey_form_url: url }).eq("id", eventId);
+    if (error) {
+      console.error(error);
+      return;
+    }
+    setEvents((prev) => prev.map((e) => (e.id === eventId ? { ...e, surveyFormUrl: url } : e)));
   }, []);
 
-  const setEventPublished = useCallback((eventId: string, published: boolean) => {
-    updateState((prev) => ({
-      ...prev,
-      events: prev.events.map((e) => (e.id === eventId ? { ...e, published } : e)),
-    }));
+  const setEventPublished = useCallback(async (eventId: string, published: boolean) => {
+    const supabase = createClient();
+    const { error } = await supabase.from("events").update({ published }).eq("id", eventId);
+    if (error) {
+      console.error(error);
+      return;
+    }
+    setEvents((prev) => prev.map((e) => (e.id === eventId ? { ...e, published } : e)));
   }, []);
 
-  const markPaid = useCallback((registrationId: string) => {
-    updateState((prev) => patchRegistration(prev, registrationId, { paymentStatus: "PAID", registrationStatus: "CONFIRMED" }));
-  }, []);
+  const patchRegistrationRemote = useCallback(
+    async (registrationId: string, remotePatch: Record<string, unknown>, localPatch: Partial<Registration>) => {
+      setRegistrations((prev) => prev.map((r) => (r.id === registrationId ? { ...r, ...localPatch } : r)));
+      const supabase = createClient();
+      const { error } = await supabase.from("registrations").update(remotePatch).eq("id", registrationId);
+      if (error) console.error(error);
+    },
+    []
+  );
 
-  const cancelRegistration = useCallback((registrationId: string) => {
-    updateState((prev) => {
-      const reg = prev.registrations.find((r) => r.id === registrationId);
-      if (!reg) return prev;
+  const markPaid = useCallback(
+    (registrationId: string) =>
+      patchRegistrationRemote(
+        registrationId,
+        { payment_status: "PAID", registration_status: "CONFIRMED" },
+        { paymentStatus: "PAID", registrationStatus: "CONFIRMED" }
+      ),
+    [patchRegistrationRemote]
+  );
+
+  const cancelRegistration = useCallback(
+    (registrationId: string) => {
+      const reg = registrations.find((r) => r.id === registrationId);
+      if (!reg) return Promise.resolve();
       const paymentStatus = reg.paymentStatus === "PAID" ? "REFUND_PENDING" : reg.paymentStatus;
-      return patchRegistration(prev, registrationId, { registrationStatus: "CANCELLED", paymentStatus });
-    });
-  }, []);
+      return patchRegistrationRemote(
+        registrationId,
+        { registration_status: "CANCELLED", payment_status: paymentStatus },
+        { registrationStatus: "CANCELLED", paymentStatus }
+      );
+    },
+    [registrations, patchRegistrationRemote]
+  );
 
-  const completeRefund = useCallback((registrationId: string) => {
-    updateState((prev) => patchRegistration(prev, registrationId, { paymentStatus: "REFUNDED" }));
-  }, []);
+  const completeRefund = useCallback(
+    (registrationId: string) => patchRegistrationRemote(registrationId, { payment_status: "REFUNDED" }, { paymentStatus: "REFUNDED" }),
+    [patchRegistrationRemote]
+  );
 
-  const checkIn = useCallback((registrationId: string) => {
-    updateState((prev) =>
-      patchRegistration(prev, registrationId, { registrationStatus: "CHECKED_IN", checkinAt: new Date().toISOString() })
-    );
-  }, []);
+  const checkIn = useCallback(
+    (registrationId: string) => {
+      const now = new Date().toISOString();
+      return patchRegistrationRemote(
+        registrationId,
+        { registration_status: "CHECKED_IN", checkin_at: now },
+        { registrationStatus: "CHECKED_IN", checkinAt: now }
+      );
+    },
+    [patchRegistrationRemote]
+  );
 
-  const undoCheckIn = useCallback((registrationId: string) => {
-    updateState((prev) => patchRegistration(prev, registrationId, { registrationStatus: "CONFIRMED", checkinAt: null }));
-  }, []);
+  const undoCheckIn = useCallback(
+    (registrationId: string) =>
+      patchRegistrationRemote(registrationId, { registration_status: "CONFIRMED", checkin_at: null }, { registrationStatus: "CONFIRMED", checkinAt: null }),
+    [patchRegistrationRemote]
+  );
 
-  const markAttended = useCallback((registrationId: string) => {
-    updateState((prev) => patchRegistration(prev, registrationId, { registrationStatus: "ATTENDED" }));
-  }, []);
+  const markAttended = useCallback(
+    (registrationId: string) => patchRegistrationRemote(registrationId, { registration_status: "ATTENDED" }, { registrationStatus: "ATTENDED" }),
+    [patchRegistrationRemote]
+  );
 
-  const markNoShow = useCallback((registrationId: string) => {
-    updateState((prev) => patchRegistration(prev, registrationId, { registrationStatus: "NO_SHOW" }));
-  }, []);
+  const markNoShow = useCallback(
+    (registrationId: string) => patchRegistrationRemote(registrationId, { registration_status: "NO_SHOW" }, { registrationStatus: "NO_SHOW" }),
+    [patchRegistrationRemote]
+  );
 
-  const recordMessageBatch = useCallback((eventId: string, templateKey: MessageTemplateKey, entries: MessageBatchEntry[]) => {
-    updateState((prev) => {
-      if (!entries.length) return prev;
+  const recordMessageBatch = useCallback(
+    async (eventId: string, templateKey: MessageTemplateKey, entries: MessageBatchEntry[]) => {
+      if (!entries.length) return;
       const now = new Date().toISOString();
       const entryByRegId = new Map(entries.map((e) => [e.registrationId, e]));
-      const registrations = prev.registrations.map((r) => {
+
+      const merged = registrations.map((r) => {
         const entry = entryByRegId.get(r.id);
         if (!entry) return r;
         return {
@@ -317,6 +382,18 @@ export function DataProvider({ children }: { children: ReactNode }) {
           ],
         };
       });
+      setRegistrations(merged);
+
+      const supabase = createClient();
+      await Promise.all(
+        entries.map(async (entry) => {
+          const reg = merged.find((r) => r.id === entry.registrationId);
+          if (!reg) return;
+          const { error } = await supabase.from("registrations").update({ sms_log: reg.smsLog }).eq("id", entry.registrationId);
+          if (error) console.error(error);
+        })
+      );
+
       const successCount = entries.filter((e) => e.status === "SENT").length;
       const batch: MessageBatchLog = {
         id: `msg-${Date.now()}`,
@@ -328,16 +405,18 @@ export function DataProvider({ children }: { children: ReactNode }) {
         successCount,
         failedCount: entries.length - successCount,
       };
-      return { ...prev, registrations, messageLogs: [batch, ...prev.messageLogs] };
-    });
-  }, []);
+      updateLocalState((prev) => ({ ...prev, messageLogs: [batch, ...prev.messageLogs] }));
+    },
+    [registrations]
+  );
 
-  const recordEmailBatch = useCallback((eventId: string, subject: string, entries: EmailBatchEntry[]) => {
-    updateState((prev) => {
-      if (!entries.length) return prev;
+  const recordEmailBatch = useCallback(
+    async (eventId: string, subject: string, entries: EmailBatchEntry[]) => {
+      if (!entries.length) return;
       const now = new Date().toISOString();
       const entryByRegId = new Map(entries.map((e) => [e.registrationId, e]));
-      const registrations = prev.registrations.map((r) => {
+
+      const merged = registrations.map((r) => {
         const entry = entryByRegId.get(r.id);
         if (!entry) return r;
         return {
@@ -355,6 +434,18 @@ export function DataProvider({ children }: { children: ReactNode }) {
           ],
         };
       });
+      setRegistrations(merged);
+
+      const supabase = createClient();
+      await Promise.all(
+        entries.map(async (entry) => {
+          const reg = merged.find((r) => r.id === entry.registrationId);
+          if (!reg) return;
+          const { error } = await supabase.from("registrations").update({ email_log: reg.emailLog }).eq("id", entry.registrationId);
+          if (error) console.error(error);
+        })
+      );
+
       const successCount = entries.filter((e) => e.status === "SENT").length;
       const batch: EmailBatchLog = {
         id: `email-${Date.now()}`,
@@ -366,18 +457,20 @@ export function DataProvider({ children }: { children: ReactNode }) {
         successCount,
         failedCount: entries.length - successCount,
       };
-      return { ...prev, registrations, emailLogs: [batch, ...prev.emailLogs] };
-    });
-  }, []);
+      updateLocalState((prev) => ({ ...prev, emailLogs: [batch, ...prev.emailLogs] }));
+    },
+    [registrations]
+  );
 
   const value: BiomatesDataContextValue = {
-    events: state.events,
-    messageLogs: state.messageLogs,
-    emailLogs: state.emailLogs,
-    isHydrated,
+    events,
+    messageLogs: local.messageLogs,
+    emailLogs: local.emailLogs,
+    isHydrated: eventsLoaded,
     getEvent,
     activeRegistrationsForEvent,
     registrationsForEvent,
+    registrationCountForEvent,
     myRegistrations,
     getRegistration,
     registerForEvent,

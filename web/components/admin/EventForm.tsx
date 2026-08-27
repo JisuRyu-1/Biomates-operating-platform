@@ -209,7 +209,7 @@ export function EventForm({ mode, eventId, initialState }: EventFormProps) {
     }));
   }
 
-  function handleSubmit(e: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const fieldErrors = validate(state);
     setErrors(fieldErrors);
@@ -219,14 +219,18 @@ export function EventForm({ mode, eventId, initialState }: EventFormProps) {
     }
 
     const values = buildSubmitValues(state);
-    if (mode === "create") {
-      const created = createEvent(values);
-      showToast(`새 행사 "${created.title}"가 생성되었습니다.`);
-    } else if (eventId) {
-      updateEvent(eventId, values);
-      showToast("행사 정보를 저장했습니다.");
+    try {
+      if (mode === "create") {
+        const created = await createEvent(values);
+        showToast(`새 행사 "${created.title}"가 생성되었습니다.`);
+      } else if (eventId) {
+        await updateEvent(eventId, values);
+        showToast("행사 정보를 저장했습니다.");
+      }
+      router.push("/admin/events");
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : "저장 중 오류가 발생했습니다.");
     }
-    router.push("/admin/events");
   }
 
   return (

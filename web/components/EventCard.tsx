@@ -4,9 +4,9 @@ import { fmtDate, fmtMoney } from "@/lib/format";
 import { useBiomatesData } from "@/lib/data-context";
 
 export function EventCard({ event }: { event: BiomatesEvent }) {
-  const { activeRegistrationsForEvent } = useBiomatesData();
+  const { registrationCountForEvent } = useBiomatesData();
   const isUpcoming = event.status === "UPCOMING";
-  const regCount = activeRegistrationsForEvent(event.id).length;
+  const regCount = registrationCountForEvent(event.id);
   const pct = Math.min(100, Math.round((regCount / event.capacity) * 100));
 
   return (

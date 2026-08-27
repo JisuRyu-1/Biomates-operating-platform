@@ -1,20 +1,32 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useBiomatesData } from "@/lib/data-context";
 import { RegistrationStatusPill, PaymentStatusPill } from "@/components/StatusPill";
 import { fmtDate, fmtMoney } from "@/lib/format";
+import type { Registration } from "@/lib/types";
 
 export default function RegistrationCompletePage() {
   const { registrationId } = useParams<{ registrationId: string }>();
   const { getRegistration, getEvent, isHydrated } = useBiomatesData();
+  const [registration, setRegistration] = useState<Registration | null | undefined>(undefined);
 
-  if (!isHydrated) {
+  useEffect(() => {
+    let cancelled = false;
+    getRegistration(registrationId).then((r) => {
+      if (!cancelled) setRegistration(r ?? null);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [registrationId, getRegistration]);
+
+  if (!isHydrated || registration === undefined) {
     return <div className="card empty-state">불러오는 중…</div>;
   }
 
-  const registration = getRegistration(registrationId);
   if (!registration) {
     return (
       <div className="card empty-state">

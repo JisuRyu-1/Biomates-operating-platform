@@ -22,12 +22,16 @@ function statTile(num: number, label: string, tone: string, href?: string) {
 }
 
 export default function AdminDashboardPage() {
-  const { events, registrationsForEvent } = useBiomatesData();
+  const { events, registrationsForEvent, isHydrated } = useBiomatesData();
   const searchParams = useSearchParams();
   const router = useRouter();
 
   const eventId = searchParams.get("event") || events[0]?.id;
   const event = events.find((e) => e.id === eventId);
+
+  if (!isHydrated) {
+    return <div className="card empty-state">불러오는 중…</div>;
+  }
 
   if (!event) {
     return <div className="card empty-state">등록된 행사가 없습니다.</div>;

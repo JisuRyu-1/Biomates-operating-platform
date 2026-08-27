@@ -5,7 +5,11 @@ import { useBiomatesData } from "@/lib/data-context";
 import { fmtDate, fmtMoney } from "@/lib/format";
 
 export default function AdminEventsPage() {
-  const { events, activeRegistrationsForEvent, setEventPublished } = useBiomatesData();
+  const { events, activeRegistrationsForEvent, setEventPublished, isHydrated } = useBiomatesData();
+
+  if (!isHydrated) {
+    return <div className="card empty-state">불러오는 중…</div>;
+  }
 
   return (
     <div className="stack">

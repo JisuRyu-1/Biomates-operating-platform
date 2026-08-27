@@ -23,6 +23,7 @@ export function RegistrationForm({ eventId }: { eventId: string }) {
 
   const [values, setValues] = useState<RegistrationFormValues>(EMPTY_VALUES);
   const [errors, setErrors] = useState<RegistrationFormErrors>({});
+  const [submitting, setSubmitting] = useState(false);
 
   function handleChange<K extends keyof RegistrationFormValues>(key: K, value: RegistrationFormValues[K]) {
     setValues((prev) => ({ ...prev, [key]: value }));
@@ -37,7 +38,7 @@ export function RegistrationForm({ eventId }: { eventId: string }) {
     return next;
   }
 
-  function handleSubmit(e: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const fieldErrors = validate(values);
     setErrors(fieldErrors);
@@ -46,13 +47,20 @@ export function RegistrationForm({ eventId }: { eventId: string }) {
       return;
     }
 
-    const { registration, duplicate } = registerForEvent(eventId, values);
-    if (duplicate) {
-      showToast("이미 이 행사에 신청하셨습니다.");
-    } else {
-      showToast("신청이 접수되었습니다.");
+    setSubmitting(true);
+    try {
+      const { registration, duplicate } = await registerForEvent(eventId, values);
+      if (duplicate) {
+        showToast("이미 이 행사에 신청하셨습니다.");
+      } else {
+        showToast("신청이 접수되었습니다.");
+      }
+      router.push(`/registrations/${registration.id}`);
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : "신청 처리 중 오류가 발생했습니다.");
+    } finally {
+      setSubmitting(false);
     }
-    router.push(`/registrations/${registration.id}`);
   }
 
   return (
@@ -150,8 +158,8 @@ export function RegistrationForm({ eventId }: { eventId: string }) {
       </div>
 
       <div style={{ display: "flex", gap: 10, marginTop: 20 }}>
-        <button type="submit" className="btn btn-primary">
-          신청 제출
+        <button type="submit" className="btn btn-primary" disabled={submitting}>
+          {submitting ? "제출 중…" : "신청 제출"}
         </button>
       </div>
     </form>

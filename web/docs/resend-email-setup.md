@@ -7,20 +7,18 @@ Admin Participants의 "설문 이메일 발송"은 Resend API를 통해 실제�
 1. [resend.com](https://resend.com) 접속 후 계정 생성
 2. 무료 플랜으로 시작 가능 (월 발송량 제한 있음, 이벤트당 50명 미만 규모에는 충분)
 
-## 2. 발신 주소 준비
+## 2. 발신 주소
 
-두 가지 중 하나를 선택한다.
+**완료됨 (도메인 인증 방식 사용 중).** `biomates.org` 도메인을 Resend에 등록하고 Cloudflare DNS에 DKIM/SPF/DMARC 레코드를 추가해 인증을 완료했다. 발신 주소는 `RESEND_FROM_EMAIL=events@biomates.org`.
 
-### 옵션 A — 바로 테스트 (권장, 도메인 없어도 됨)
+새 프로젝트에서 처음부터 다시 설정해야 한다면:
 
-Resend가 제공하는 `onboarding@resend.dev` 발신 주소를 그대로 사용하면 도메인 인증 없이 즉시 발송 테스트가 가능하다. `RESEND_FROM_EMAIL=onboarding@resend.dev`로 설정하면 된다. 다만 발신자 표시가 Biomates 도메인이 아니므로, 실제 운영 전에는 옵션 B로 전환하는 것을 권장한다.
+1. Resend 대시보드 → **Domains → Add Domain** → 도메인 입력(예: `biomates.org`)
+2. 안내되는 DNS 레코드(DKIM TXT, SPF용 MX+TXT, DMARC TXT)를 도메인 관리 콘솔(Cloudflare 등)에 추가 — "Manual setup"으로 각 레코드의 **Content 값 전체를 복사**해서 붙여넣어야 한다(화면에 잘려 보이는 값을 그대로 타이핑하면 안 됨). TXT/MX 레코드는 Cloudflare의 프록시(주황 구름) 대상이 아니라 DNS only로 자동 처리된다.
+3. Resend에서 **Verify DNS Records** 실행, 검증 완료까지 대기
+4. 인증 완료 후 그 도메인의 아무 주소(`events@biomates.org` 등)를 발신 주소로 사용
 
-### 옵션 B — 실제 도메인 인증 (운영 단계에서 권장)
-
-1. Resend 대시보드 → **Domains → Add Domain**
-2. 발송에 사용할 도메인(예: `biomates.example`) 입력
-3. 안내되는 DNS 레코드(SPF/DKIM 등)를 도메인 관리 콘솔(가비아, Cloudflare 등)에 추가
-4. 인증 완료 후 `events@biomates.example` 같은 주소를 발신 주소로 사용
+도메인 인증 전에는 Resend의 `onboarding@resend.dev` 발신 주소로 임시 테스트가 가능하지만, **계정 소유자 본인 이메일로만 발송 가능**하다는 제약이 있다(그 외 수신자가 하나라도 섞이면 요청 전체가 403으로 거부됨). `lib/messaging/registration-notify.ts`의 `RESEND_NOTIFY_OVERRIDE` 환경변수가 그 제약 우회용 임시 조치였는데, 도메인 인증이 끝난 지금은 더 이상 설정하지 않는다(설정 안 하면 코드가 자동으로 admin_whitelist 전체에 발송).
 
 ## 3. API Key 발급
 
@@ -34,7 +32,7 @@ Resend가 제공하는 `onboarding@resend.dev` 발신 주소를 그대로 사용
 
 ```
 RESEND_API_KEY=re_xxxxxxxxxxxxxxxxxxxx
-RESEND_FROM_EMAIL=onboarding@resend.dev   # 또는 인증한 도메인의 주소
+RESEND_FROM_EMAIL=events@biomates.org
 ```
 
 dev 서버 재시작 후 반영된다.

@@ -27,6 +27,7 @@ export function RegistrationForm({ eventId }: { eventId: string }) {
 
   function handleChange<K extends keyof RegistrationFormValues>(key: K, value: RegistrationFormValues[K]) {
     setValues((prev) => ({ ...prev, [key]: value }));
+    setErrors((prev) => (prev[key as keyof RegistrationFormErrors] ? { ...prev, [key]: undefined } : prev));
   }
 
   function validate(v: RegistrationFormValues): RegistrationFormErrors {

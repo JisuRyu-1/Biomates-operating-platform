@@ -156,6 +156,8 @@ export function EventForm({ mode, eventId, initialState }: EventFormProps) {
 
   function set<K extends keyof FormState>(key: K, value: FormState[K]) {
     setState((prev) => ({ ...prev, [key]: value }));
+    const errorKey = key as unknown as keyof EventFormErrors;
+    setErrors((prev) => (prev[errorKey] ? { ...prev, [errorKey]: undefined } : prev));
   }
 
   function updateProgramRow(index: number, patch: Partial<ProgramItem>) {

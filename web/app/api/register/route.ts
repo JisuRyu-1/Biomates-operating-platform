@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createServiceClient, isServiceConfigured } from "@/lib/supabase/service";
 import { rowToEvent, rowToRegistration } from "@/lib/supabase/mappers";
 import { initialStatusFor } from "@/lib/status";
+import { notifyAdminsOfNewRegistration } from "@/lib/messaging/registration-notify";
 import type { RegistrationFormValues } from "@/lib/types";
 
 interface RegisterRequestBody extends RegistrationFormValues {
@@ -92,5 +93,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "신청 처리 중 오류가 발생했습니다." }, { status: 500 });
   }
 
-  return NextResponse.json({ duplicate: false, registration: rowToRegistration(insertedRow) });
+  const registration = rowToRegistration(insertedRow);
+  await notifyAdminsOfNewRegistration(event, registration);
+
+  return NextResponse.json({ duplicate: false, registration });
 }

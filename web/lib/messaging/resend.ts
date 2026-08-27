@@ -12,7 +12,7 @@ export interface SendResendEmailResult {
 }
 
 interface SendResendEmailParams {
-  to: string;
+  to: string | string[];
   subject: string;
   text: string;
 }

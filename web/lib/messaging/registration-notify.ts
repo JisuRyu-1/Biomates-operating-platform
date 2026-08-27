@@ -3,7 +3,7 @@ import { createServiceClient } from "@/lib/supabase/service";
 import { isResendConfigured, sendResendEmail } from "@/lib/messaging/resend";
 import type { BiomatesEvent, Registration } from "@/lib/types";
 
-const SITE_URL = "https://biomates-operating-platform.vercel.app";
+const SITE_URL = "https://biomates.org";
 
 /**
  * Emails admin_whitelist when a new (non-duplicate) registration comes in.

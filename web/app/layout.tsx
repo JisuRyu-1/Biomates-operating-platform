@@ -32,7 +32,7 @@ const orbitron = Orbitron({
 
 const SITE_TITLE = "Biomates Event Operations Platform";
 const SITE_DESCRIPTION = "Biomates 행사 신청, 안내, Follow-up을 한 곳에서 관리하는 이벤트 운영 플랫폼";
-const SITE_URL = "https://biomates-operating-platform.vercel.app";
+const SITE_URL = "https://biomates.org";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),

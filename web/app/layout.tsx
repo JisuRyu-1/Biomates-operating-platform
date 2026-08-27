@@ -30,9 +30,29 @@ const orbitron = Orbitron({
   display: "swap",
 });
 
+const SITE_TITLE = "Biomates Event Operations Platform";
+const SITE_DESCRIPTION = "Biomates 행사 신청, 안내, Follow-up을 한 곳에서 관리하는 이벤트 운영 플랫폼";
+const SITE_URL = "https://biomates-operating-platform.vercel.app";
+
 export const metadata: Metadata = {
-  title: "Biomates Event Operations Platform",
-  description: "Biomates 행사 신청, 안내, Follow-up을 한 곳에서 관리하는 이벤트 운영 플랫폼",
+  metadataBase: new URL(SITE_URL),
+  title: SITE_TITLE,
+  description: SITE_DESCRIPTION,
+  openGraph: {
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+    url: SITE_URL,
+    siteName: "Biomates",
+    images: [{ url: "/brand/biomates-og-image.png", width: 2608, height: 2608 }],
+    locale: "ko_KR",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+    images: ["/brand/biomates-og-image.png"],
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

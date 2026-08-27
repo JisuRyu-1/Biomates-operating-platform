@@ -33,7 +33,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "로그인이 필요합니다." }, { status: 401 });
   }
 
-  const { data: admin } = await supabase.from("admin_whitelist").select("id").eq("email", user.email).maybeSingle();
+  const { data: admin } = await supabase.from("admin_whitelist").select("id, name").eq("email", user.email).maybeSingle();
   if (!admin) {
     return NextResponse.json({ error: "운영진 권한이 없습니다." }, { status: 403 });
   }
@@ -54,7 +54,13 @@ export async function POST(request: Request) {
 
   const results: EmailSendResult[] = [];
   for (const recipient of body.recipients) {
-    const sendResult = await sendResendEmail({ to: recipient.email, subject: recipient.subject, text: recipient.body });
+    const sendResult = await sendResendEmail({
+      to: recipient.email,
+      subject: recipient.subject,
+      text: recipient.body,
+      fromName: `${admin.name} (Biomates)`,
+      replyTo: user.email,
+    });
     results.push({
       registrationId: recipient.registrationId,
       email: recipient.email,

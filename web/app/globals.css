@@ -325,6 +325,34 @@ a {
   height: 32px;
   width: auto;
 }
+.hero-headline {
+  font-size: clamp(20px, 4.5vw, 28px);
+  line-height: 1.35;
+}
+@media (max-width: 700px) {
+  .hero-card {
+    padding: 26px 18px;
+  }
+  .hero-brand-icon {
+    height: 28px;
+  }
+  .hero-brand-wordmark {
+    height: 24px;
+  }
+  .hero-headline {
+    font-size: 19px;
+    line-height: 1.4;
+  }
+  .hero-sub {
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  /* Forced breaks assume a wide line; on narrow screens each half still
+     wraps on its own, so let the browser choose break points instead. */
+  .hero-linebreak {
+    display: none;
+  }
+}
 
 /* ---------- Buttons ---------- */
 .btn {

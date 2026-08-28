@@ -16,9 +16,10 @@ export default function HomePage() {
   return (
     <div className="stack">
       <div className="card hero-card">
-        <Image className="hero-icon" src="/brand/biomates-icon-mark.png" alt="" width={2161} height={2161} priority />
-        <Image className="brand-mark-light hero-logo" src="/brand/biomates-logo-dark-navy.png" alt="Biomates" width={2038} height={306} priority />
-        <Image className="brand-mark-dark hero-logo" src="/brand/biomates-logo-white.png" alt="Biomates" width={2038} height={306} priority />
+        <div className="hero-brand-row">
+          <Image className="hero-brand-icon" src="/brand/biomates-icon-mark.png" alt="" width={2161} height={2161} priority />
+          <Image className="hero-brand-wordmark" src="/brand/biomates-logo-turquoise.png" alt="Biomates" width={2038} height={306} priority />
+        </div>
         <h1 className="h1 brand-font" style={{ marginTop: 8 }}>
           좋은 사람들과 연결되고, 경험을 나누고, 함께 성장하는
           <br />

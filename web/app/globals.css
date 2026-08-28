@@ -311,16 +311,19 @@ a {
   max-width: 640px;
   margin: 12px auto 0;
 }
-.hero-icon {
-  height: 44px;
-  width: auto;
-  margin: 0 auto 10px;
-  display: block;
+.hero-brand-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
 }
-.hero-logo {
-  height: 30px;
+.hero-brand-icon {
+  height: 38px;
   width: auto;
-  margin: 0 auto;
+}
+.hero-brand-wordmark {
+  height: 32px;
+  width: auto;
 }
 
 /* ---------- Buttons ---------- */

@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useTheme } from "@/lib/theme-context";
 import { useAdminAuth } from "@/lib/auth-context";
 import { useDevicePreview } from "@/lib/device-preview-context";
@@ -15,10 +15,16 @@ const NAV_ITEMS = [
 
 export function SiteHeader() {
   const pathname = usePathname();
+  const router = useRouter();
   const { isDark, toggleTheme } = useTheme();
   const { currentAdmin, logout } = useAdminAuth();
   const { isPreview, toggle: togglePreview } = useDevicePreview();
   const onAdminRoute = pathname.startsWith("/admin");
+
+  async function handleLogout() {
+    await logout();
+    router.push("/");
+  }
 
   return (
     <header className="topbar">
@@ -56,7 +62,7 @@ export function SiteHeader() {
         {onAdminRoute && currentAdmin ? (
           <>
             <span className="faint">{currentAdmin.name}님</span>
-            <button type="button" className="btn btn-ghost btn-sm" onClick={() => void logout()}>
+            <button type="button" className="btn btn-ghost btn-sm" onClick={() => void handleLogout()}>
               로그아웃
             </button>
           </>

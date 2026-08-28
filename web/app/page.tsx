@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useBiomatesData } from "@/lib/data-context";
 import { EventCard } from "@/components/EventCard";
 
@@ -15,13 +16,15 @@ export default function HomePage() {
   return (
     <div className="stack">
       <div className="card hero-card">
-        <span className="eyebrow">Biomates</span>
+        <Image className="brand-mark-light hero-logo" src="/brand/biomates-logo-dark-navy.png" alt="Biomates" width={2038} height={306} priority />
+        <Image className="brand-mark-dark hero-logo" src="/brand/biomates-logo-white.png" alt="Biomates" width={2038} height={306} priority />
         <h1 className="h1 brand-font" style={{ marginTop: 8 }}>
-          Where Bio Meets People
+          좋은 사람들과 연결되고, 경험을 나누고, 함께 성장하는
+          진단, 의료기기, 및 헬스케어 커뮤니티
         </h1>
         <p className="muted hero-sub">
-          행사 공지부터 신청, 결제, 참가 확정, Check-in, Follow-up까지 하나의 흐름으로 운영합니다. 의료 AI·헬스케어
-          커뮤니티를 위한 Biomates의 다음 행사를 이곳에서 확인하고 신청하세요.
+          Biomates에서 다양한 사람들과 만나 서로의 경험과 생각을 나누고 새로운 가능성을 발견해 보세요. 다가오는
+          행사를 확인하고 편하게 함께해 주세요.
         </p>
       </div>
 

@@ -311,6 +311,11 @@ a {
   max-width: 52ch;
   margin: 12px auto 0;
 }
+.hero-logo {
+  height: 30px;
+  width: auto;
+  margin: 0 auto;
+}
 
 /* ---------- Buttons ---------- */
 .btn {

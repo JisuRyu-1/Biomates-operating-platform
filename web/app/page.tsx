@@ -16,11 +16,13 @@ export default function HomePage() {
   return (
     <div className="stack">
       <div className="card hero-card">
+        <Image className="hero-icon" src="/brand/biomates-icon-mark.png" alt="" width={2161} height={2161} priority />
         <Image className="brand-mark-light hero-logo" src="/brand/biomates-logo-dark-navy.png" alt="Biomates" width={2038} height={306} priority />
         <Image className="brand-mark-dark hero-logo" src="/brand/biomates-logo-white.png" alt="Biomates" width={2038} height={306} priority />
         <h1 className="h1 brand-font" style={{ marginTop: 8 }}>
           좋은 사람들과 연결되고, 경험을 나누고, 함께 성장하는
-          진단, 의료기기, 및 헬스케어 커뮤니티
+          <br />
+          진단, 의료기기 및 헬스케어 커뮤니티
         </h1>
         <p className="muted hero-sub">
           Biomates에서 다양한 사람들과 만나 서로의 경험과 생각을 나누고 새로운 가능성을 발견해 보세요. 다가오는

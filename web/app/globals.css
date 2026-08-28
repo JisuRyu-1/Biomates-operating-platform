@@ -311,6 +311,12 @@ a {
   max-width: 52ch;
   margin: 12px auto 0;
 }
+.hero-icon {
+  height: 44px;
+  width: auto;
+  margin: 0 auto 10px;
+  display: block;
+}
 .hero-logo {
   height: 30px;
   width: auto;
